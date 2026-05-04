@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌡️ Climate Change & Hope — Session 2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+:root {
+  --cream:   #faf8f3;
+  --white:   #ffffff;
+  --ink:     #1c1917;
+  --ink-mid: #44403c;
+  --ink-dim: #78716c;
+  --rule:    #e7e5e0;
+
+  /* Section colours */
+  --red:     #dc2626;
+  --red-bg:  #fff5f5;
+  --red-bd:  #fecaca;
+  --orange:  #ea580c;
+  --orange-bg:#fff7ed;
+  --orange-bd:#fed7aa;
+  --teal:    #0d9488;
+  --teal-bg: #f0fdfa;
+  --teal-bd: #99f6e4;
+  --green:   #16a34a;
+  --green-bg:#f0fdf4;
+  --green-bd:#bbf7d0;
+  --blue:    #1d4ed8;
+  --blue-bg: #eff6ff;
+  --blue-bd: #bfdbfe;
+  --purple:  #7c3aed;
+  --purple-bg:#faf5ff;
+  --purple-bd:#ddd6fe;
+  --amber:   #d97706;
+  --amber-bg:#fffbeb;
+  --amber-bd:#fde68a;
+
+  --r: 12px;
+  --r-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Lexend', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  display: flex; flex-direction: column;
+  height: 100dvh;
+  font-size: 15px;
+}
+
+/* PROGRESS */
+#progress-wrap { height: 5px; background: var(--rule); flex-shrink: 0; }
+#progress-fill { height: 100%; background: linear-gradient(90deg,#dc2626,#ea580c,#16a34a); transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+
+/* TOP BAR */
+#topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.5rem 1.1rem; flex-shrink: 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--rule);
+}
+#slide-counter { font-size: 0.72rem; font-weight: 500; color: var(--ink-dim); letter-spacing: 0.06em; }
+#part-label { font-size: 0.68rem; font-weight: 700; padding: 0.18rem 0.65rem; border-radius: 20px; letter-spacing: 0.07em; text-transform: uppercase; }
+
+/* SLIDE VIEWPORT */
+#slide-viewport { flex: 1; position: relative; overflow: hidden; }
+
+.slide {
+  position: absolute; inset: 0;
+  padding: 1.1rem 1.25rem 0;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transform: translateX(30px); transition: none;
+  will-change: opacity, transform;
+  background: var(--cream);
+}
+.slide-content {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.slide-content::-webkit-scrollbar { display: none; }
+.slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.4,0,.2,1); }
+.slide.exit-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.4,0,.2,1); pointer-events: none; }
+.slide.exit-right { opacity: 0; transform: translateX(30px); transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.4,0,.2,1); pointer-events: none; }
+.slide.pre-enter-right { transform: translateX(30px); opacity: 0; transition: none; }
+.slide.pre-enter-left { transform: translateX(-30px); opacity: 0; transition: none; }
+
+/* BOTTOM NAV */
+#bottom-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1.1rem;
+  background: var(--white); border-top: 1px solid var(--rule);
+  flex-shrink: 0; gap: 0.75rem;
+}
+.nav-btn {
+  display: flex; align-items: center; gap: 0.35rem;
+  background: var(--white); border: 1.5px solid var(--rule);
+  border-radius: 8px; padding: 0.5rem 1rem;
+  font-family: 'Lexend', sans-serif; font-weight: 600; font-size: 0.85rem;
+  color: var(--ink-mid); cursor: pointer; transition: all 0.15s;
+}
+.nav-btn:active { transform: scale(0.96); }
+.nav-btn.primary { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+#jump-dots { display: flex; gap: 4px; align-items: center; flex: 1; justify-content: center; flex-wrap: wrap; }
+.jump-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); cursor: pointer; transition: all 0.2s; border: none; padding: 0; }
+.jump-dot.active { background: var(--ink); width: 18px; border-radius: 3px; }
+
+/* TYPOGRAPHY */
+.slide-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.slide-label::after { content:''; flex:1; height:1px; background:var(--rule); }
+
+.slide-title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  font-weight: 700; line-height: 1.2;
+  color: var(--ink); margin-bottom: 0.65rem;
+}
+.slide-body {
+  font-size: 0.9rem; line-height: 1.72;
+  color: var(--ink-mid); margin-bottom: 0.6rem;
+  font-weight: 400;
+}
+.slide-body strong { color: var(--ink); font-weight: 700; }
+
+/* CARDS */
+.card {
+  border-radius: var(--r); padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem; border: 1.5px solid var(--rule);
+  background: var(--white);
+}
+.card.red    { background: var(--red-bg);    border-color: var(--red-bd); }
+.card.orange { background: var(--orange-bg); border-color: var(--orange-bd); }
+.card.teal   { background: var(--teal-bg);   border-color: var(--teal-bd); }
+.card.green  { background: var(--green-bg);  border-color: var(--green-bd); }
+.card.blue   { background: var(--blue-bg);   border-color: var(--blue-bd); }
+.card.purple { background: var(--purple-bg); border-color: var(--purple-bd); }
+.card.amber  { background: var(--amber-bg);  border-color: var(--amber-bd); }
+
+.card-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 0.35rem;
+}
+.card-label.red    { color: var(--red); }
+.card-label.orange { color: var(--orange); }
+.card-label.teal   { color: var(--teal); }
+.card-label.green  { color: var(--green); }
+.card-label.blue   { color: var(--blue); }
+.card-label.purple { color: var(--purple); }
+.card-label.amber  { color: var(--amber); }
+
+.card p { font-size: 0.88rem; line-height: 1.65; color: var(--ink-mid); }
+.card p strong { color: var(--ink); font-weight: 700; }
+
+/* BULLET LISTS */
+ul.sl { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; }
+ul.sl li {
+  background: var(--white); border-radius: var(--r-sm);
+  padding: 0.55rem 0.85rem 0.55rem 1.9rem;
+  position: relative; font-size: 0.88rem; line-height: 1.55;
+  border: 1px solid var(--rule); color: var(--ink-mid);
+}
+ul.sl li strong { color: var(--ink); font-weight: 700; }
+ul.sl li::before { position: absolute; left: 0.65rem; top: 0.55rem; font-size: 0.7rem; }
+ul.sl.red    li::before { content:'●'; color:var(--red); }
+ul.sl.orange li::before { content:'●'; color:var(--orange); }
+ul.sl.teal   li::before { content:'●'; color:var(--teal); }
+ul.sl.green  li::before { content:'●'; color:var(--green); }
+ul.sl.blue   li::before { content:'●'; color:var(--blue); }
+ul.sl.amber  li::before { content:'●'; color:var(--amber); }
+
+/* FACT CHIPS */
+.fact-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.6rem; }
+.fact-chip {
+  background: var(--white); border-radius: 6px;
+  padding: 0.3rem 0.7rem; font-size: 0.78rem; font-weight: 600;
+  border: 1.5px solid var(--rule); color: var(--ink-mid);
+}
+.chip-red    { color: var(--red);    border-color: var(--red-bd);    background: var(--red-bg); }
+.chip-orange { color: var(--orange); border-color: var(--orange-bd); background: var(--orange-bg); }
+.chip-teal   { color: var(--teal);   border-color: var(--teal-bd);   background: var(--teal-bg); }
+.chip-green  { color: var(--green);  border-color: var(--green-bd);  background: var(--green-bg); }
+.chip-blue   { color: var(--blue);   border-color: var(--blue-bd);   background: var(--blue-bg); }
+.chip-amber  { color: var(--amber);  border-color: var(--amber-bd);  background: var(--amber-bg); }
+
+/* LINK BUTTON */
+.link-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--white); border: 1.5px solid var(--rule);
+  color: var(--blue); border-radius: var(--r-sm);
+  padding: 0.5rem 1rem; font-size: 0.83rem; font-weight: 600;
+  text-decoration: none; margin: 0.2rem 0.2rem 0.2rem 0; transition: all 0.15s;
+  font-family: 'Lexend', sans-serif;
+}
+.link-btn.teal   { color: var(--teal);   border-color: var(--teal-bd);   background: var(--teal-bg); }
+.link-btn.green  { color: var(--green);  border-color: var(--green-bd);  background: var(--green-bg); }
+.link-btn.orange { color: var(--orange); border-color: var(--orange-bd); background: var(--orange-bg); }
+.link-btn.big {
+  display: flex; justify-content: center; text-align: center;
+  width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem;
+  margin: 0.3rem 0;
+}
+
+/* TABLE */
+.tbl-wrap { overflow-x: auto; border-radius: var(--r); margin-bottom: 0.6rem; border: 1.5px solid var(--rule); }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: var(--white); min-width: 300px; }
+thead th { background: var(--ink); color: var(--white); padding: 0.5rem 0.6rem; text-align: left; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.04em; }
+tbody td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule); color: var(--ink-mid); }
+tbody tr:last-child td { border-bottom: none; }
+tbody td strong { color: var(--ink); font-weight: 700; }
+tbody tr:nth-child(even) { background: var(--cream); }
+
+/* TOGGLE ACCORDION */
+.toggle-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.6rem; }
+.toggle-item { background: var(--white); border-radius: var(--r-sm); overflow: hidden; border: 1.5px solid var(--rule); }
+.toggle-header { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.9rem; cursor: pointer; font-weight: 600; font-size: 0.88rem; user-select: none; color: var(--ink); }
+.toggle-header .ti { flex-shrink: 0; font-size: 1rem; margin-right: 0.5rem; }
+.toggle-arrow { transition: transform 0.3s; flex-shrink: 0; color: var(--ink-dim); font-size: 0.7rem; }
+.toggle-header.open .toggle-arrow { transform: rotate(180deg); }
+.toggle-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(.4,0,.2,1); padding: 0 0.9rem; font-size: 0.85rem; line-height: 1.65; color: var(--ink-mid); border-top: 0px solid var(--rule); }
+.toggle-body.open { max-height: 500px; padding: 0 0.9rem 0.75rem; border-top-width: 1px; }
+.toggle-body strong { color: var(--ink); font-weight: 700; }
+.toggle-body ul.sl { margin-top: 0.4rem; }
+
+/* TAP REVEAL CARDS */
+.reveal-cards { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.6rem; }
+.reveal-card {
+  background: var(--white); border-radius: var(--r-sm);
+  padding: 0.65rem 0.9rem; display: flex; align-items: flex-start; gap: 0.55rem;
+  cursor: pointer; border: 1.5px solid var(--rule); transition: all 0.2s;
+}
+.reveal-card:active { transform: scale(0.98); }
+.reveal-card.revealed { border-color: var(--teal-bd); background: var(--teal-bg); cursor: default; }
+.rc-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.05rem; }
+.rc-name { font-weight: 700; font-size: 0.86rem; color: var(--ink); }
+.rc-detail { font-size: 0.78rem; color: var(--ink-dim); margin-top: 0.15rem; display: none; line-height: 1.55; }
+.reveal-card.revealed .rc-detail { display: block; color: var(--teal); font-weight: 600; }
+.rc-tap { font-size: 0.72rem; color: var(--ink-dim); font-style: italic; margin-bottom: 0.35rem; }
+
+
+/* FLIP CARDS */
+.flip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-bottom: 0.6rem; }
+.flip-card { perspective: 800px; height: 120px; cursor: pointer; }
+.flip-card.tall { height: 150px; }
+.flip-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--r-sm);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0.7rem;
+  border: 1.5px solid var(--rule);
+  text-align: center;
+}
+.flip-front {
+  background: var(--white);
+}
+.flip-front .flip-q {
+  font-size: 0.82rem; font-weight: 600; color: var(--ink); line-height: 1.4;
+}
+.flip-front .flip-hint {
+  font-size: 0.65rem; color: var(--ink-dim); margin-top: 0.35rem;
+}
+.flip-front .flip-emoji { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.flip-back { transform: rotateY(180deg); }
+.flip-back.red    { background: var(--red-bg);    border-color: var(--red-bd); }
+.flip-back.teal   { background: var(--teal-bg);   border-color: var(--teal-bd); }
+.flip-back.blue   { background: var(--blue-bg);   border-color: var(--blue-bd); }
+.flip-back.amber  { background: var(--amber-bg);  border-color: var(--amber-bd); }
+.flip-back.green  { background: var(--green-bg);  border-color: var(--green-bd); }
+.flip-back.orange { background: var(--orange-bg); border-color: var(--orange-bd); }
+.flip-back .flip-a {
+  font-size: 0.78rem; font-weight: 600; color: var(--ink-mid); line-height: 1.5;
+}
+.flip-back .flip-formula {
+  font-family: 'Courier New', monospace; font-size: 0.9rem;
+  font-weight: 700; color: var(--ink); margin-bottom: 0.2rem;
+}
+
+/* REVEAL-QUESTION (single wide card that flips) */
+.flip-question {
+  perspective: 800px; cursor: pointer; margin-bottom: 0.6rem;
+  height: auto; min-height: 80px;
+}
+.flip-question .flip-card-inner { min-height: 80px; }
+.flip-question .flip-front, .flip-question .flip-back {
+  position: relative; min-height: 80px; height: auto;
+}
+.flip-question .flip-back { position: absolute; inset: 0; }
+
+/* STAT */
+.stat-block { text-align: center; padding: 0.6rem 0 0.75rem; }
+.stat-number {
+  font-family: 'Lora', serif; font-size: clamp(3.5rem, 14vw, 5.5rem);
+  font-weight: 700; line-height: 1; color: var(--ink);
+}
+.stat-number.green { color: var(--green); }
+.stat-number.orange { color: var(--orange); }
+.stat-label { font-size: 0.8rem; color: var(--ink-dim); margin-top: 0.25rem; font-weight: 500; }
+
+/* DEFINITION BAR */
+.defn-bar {
+  background: var(--white); border-top: 1.5px solid var(--rule);
+  padding: 0.5rem 1.25rem 0.45rem;
+  flex-shrink: 0; font-size: 0.7rem;
+  color: var(--ink-dim); line-height: 1.55;
+  margin-left: -1.25rem; margin-right: -1.25rem;
+}
+.defn-bar strong { color: var(--ink-mid); font-weight: 700; }
+.defn-bar em { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem; }
+.col-card { background: var(--white); border-radius: var(--r-sm); padding: 0.75rem; border: 1.5px solid var(--rule); }
+.col-icon { font-size: 1.3rem; display: block; margin-bottom: 0.2rem; }
+.col-title { font-size: 0.75rem; font-weight: 700; color: var(--ink); margin-bottom: 0.1rem; }
+.col-body { font-size: 0.72rem; color: var(--ink-dim); line-height: 1.5; }
+
+/* PART COVER */
+.part-cover-slide { padding: 0 !important; }
+.part-cover-inner {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: flex-end; padding: 2rem 1.5rem 1.5rem;
+  position: relative; overflow: hidden;
+}
+.part-num-bg {
+  position: absolute; top: -0.5rem; right: -0.5rem;
+  font-family: 'Lora', serif; font-size: 10rem; font-weight: 700;
+  line-height: 1; opacity: 0.07; color: var(--ink);
+  pointer-events: none; user-select: none;
+}
+.part-eyebrow { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.part-big-title { font-family: 'Lora', serif; font-size: clamp(2rem, 8vw, 3rem); font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem; }
+.part-desc { font-size: 0.85rem; color: var(--ink-mid); line-height: 1.6; max-width: 280px; }
+
+/* COVER SLIDE */
+.cover-inner { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.cover-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.5rem; }
+.cover-title { font-family: 'Lora', serif; font-size: clamp(1.8rem, 7vw, 2.8rem); font-weight: 700; line-height: 1.1; color: var(--ink); margin-bottom: 0.5rem; }
+.cover-rule { width: 36px; height: 3px; background: var(--red); margin: 0.5rem 0; border-radius: 2px; }
+.cover-desc { font-size: 0.85rem; color: var(--ink-mid); line-height: 1.7; margin-bottom: 0.75rem; }
+.cover-recap { background: var(--teal-bg); border: 1.5px solid var(--teal-bd); border-radius: var(--r-sm); padding: 0.65rem 0.9rem; font-size: 0.8rem; color: var(--ink-mid); line-height: 1.65; }
+.cover-recap strong { color: var(--teal); display: block; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; font-weight: 700; }
+.cover-footer { font-size: 0.68rem; color: var(--ink-dim); padding-top: 0.5rem; }
+.cover-footer a { color: var(--blue); text-decoration: none; }
+
+/* FINAL SLIDE */
+.final-inner { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.resources-list a { display: block; color: var(--blue); font-size: 0.82rem; padding: 0.4rem 0; border-bottom: 1px solid var(--rule); text-decoration: none; font-weight: 500; }
+.resources-list a:last-child { border-bottom: none; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<div id="progress-wrap"><div id="progress-fill"></div></div>
+<div id="topbar">
+  <span id="slide-counter">1 / 1</span>
+  <span id="part-label" class="part-label"></span>
+</div>
+<div id="slide-viewport">
+
+<!-- SLIDE 0: COVER -->
+<div class="slide" id="s0" data-part="">
+  <div class="cover-inner">
+    <div>
+      <div class="cover-tag">Monday 4 May 2026</div>
+      <h1 class="cover-title">Climate Change<br>&amp; Hope</h1>
+      <div class="cover-rule"></div>
+      <p class="cover-desc">Where greenhouse gases come from · How we measure them · What the evidence shows · And the remarkable reasons for hope</p>
+    </div>
+    <p class="cover-footer">Created with Claude Sonnet 4.5 · <a href="#" onclick="goToSlide(20)">About this material →</a></p>
+  </div>
+</div>
+
+<!-- SLIDE 1: PART 1 COVER -->
+<div class="slide part-cover-slide" id="s1" data-part="Climate Change" style="background:linear-gradient(135deg,#fff5f5,#fee2e2)">
+  <div class="part-cover-inner">
+    <div class="part-num-bg">01</div>
+    <div class="part-eyebrow" style="color:var(--red)">Part 1 of 2</div>
+    <h2 class="part-big-title" style="color:var(--ink)">Climate<br>Change</h2>
+    <p class="part-desc">Where these gases come from, how we measure them, and what the evidence tells us.</p>
+  </div>
+</div>
+
+<!-- SLIDE 2: NATURAL vs ANTHROPOGENIC -->
+<div class="slide" id="s2" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--red)">Key idea</div>
+  <h2 class="slide-title">Natural vs. Human-caused</h2>
+<div class="slide-content">
+  <p class="slide-body">The greenhouse effect is <strong>natural</strong> — it has always kept Earth warm enough for life. The problem today is that human activity is making it <em>stronger</em>.</p>
+  <div class="two-col">
+    <div class="col-card" style="background:var(--teal-bg);border-color:var(--teal-bd)">
+      <span class="col-icon">🌿</span>
+      <div class="col-title" style="color:var(--teal)">Natural greenhouse effect</div>
+      <div class="col-body">Always existed. Keeps Earth at +15°C. Driven by natural processes.</div>
+    </div>
+    <div class="col-card" style="background:var(--red-bg);border-color:var(--red-bd)">
+      <span class="col-icon">🏭</span>
+      <div class="col-title" style="color:var(--red)">Anthropogenic effect</div>
+      <div class="col-body">Caused by humans. Adding extra greenhouse gases. Making the planet warmer than it should be.</div>
+    </div>
+  </div>
+  <div class="card amber">
+    <div class="card-label amber">📖 Key word</div>
+    <p><strong>Anthropogenic</strong> (an-thro-po-JEN-ik) means "caused by humans." When scientists talk about anthropogenic climate change, they mean warming caused by human activities — not natural changes.</p>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 3: SOURCES OF CO2 -->
+<div class="slide" id="s3" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--red)">Sources of Greenhouse Gases</div>
+  <h2 class="slide-title">Where does CO₂ come from?</h2>
+<div class="slide-content">
+  <p class="slide-body">CO₂ is released when we burn things that contain carbon.</p>
+  <ul class="sl teal">
+    <li>🔥 <strong>Burning fossil fuels</strong> — coal, oil, natural gas — about <strong>75%</strong> of all human CO₂</li>
+    <li>🌳 <strong>Deforestation</strong> — trees store carbon; when cut or burned, that carbon releases as CO₂</li>
+    <li>🏗️ <strong>Making cement and steel</strong> — large CO₂ releases during manufacturing</li>
+    <li>🚗 <strong>Transport</strong> — cars, trucks, planes burning petrol and diesel</li>
+  </ul>
+  <div class="card teal">
+    <div class="card-label teal">🌿 Natural sources too</div>
+    <p>Animals breathing, volcanoes, and decomposing plants all release CO₂ naturally. But these are balanced by natural <strong>carbon sinks</strong> (forests, oceans) that absorb it. The problem is the extra CO₂ humans add — natural sinks cannot absorb it all.</p>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>carbon sink</strong> <em>(KAR-bun sink)</em> — a natural reservoir that absorbs CO₂ from the atmosphere; forests and oceans are the main carbon sinks
+  </div>
+</div>
+
+<!-- SLIDE 4: SOURCES OF METHANE -->
+<div class="slide" id="s4" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--orange)">Sources of Greenhouse Gases</div>
+  <h2 class="slide-title">Where does methane come from?</h2>
+<div class="slide-content">
+  <p class="slide-body">Methane (CH₄) traps about <strong>80 times more heat per molecule</strong> than CO₂ over a 20-year period — meaning each molecule of methane causes much more warming than a molecule of CO₂. However, methane breaks down in about 12 years, unlike CO₂ which persists for centuries.</p>
+  <ul class="sl amber">
+    <li>🐄 <strong>Livestock</strong> — microbes in cattle stomachs ferment food and release CH₄ (enteric fermentation)</li>
+    <li>🌾 <strong>Rice fields</strong> — anaerobic microbes in flooded, oxygen-poor soils produce CH₄</li>
+    <li>🗑️ <strong>Landfills</strong> — microbes decomposing organic waste underground release CH₄</li>
+    <li>🌿 <strong>Wetlands</strong> — the largest <em>natural</em> source; microbial activity in waterlogged soils</li>
+    <li>🛢️ <strong>Oil and gas operations</strong> — CH₄ leaks directly from wells and pipelines</li>
+  </ul>
+  <div class="card amber">
+    <div class="card-label amber">💡 Why does this matter?</div>
+    <p>Because methane breaks down in ~12 years, cutting methane emissions today is one of the <strong>fastest ways to slow near-term warming</strong> — faster than cutting CO₂.</p>
+  </div>
+</div>
+  <!-- <div class="defn-bar"> -->
+    <!-- <strong>methane</strong> <em>(METH-ayn)</em> — CH₄; a powerful greenhouse gas produced by livestock, landfills, and gas leaks &nbsp;|&nbsp; <strong>nitrous oxide</strong> — N₂O; another greenhouse gas from fertilisers (~273× CO₂ over 100 years) -->
+  <!-- </div> -->
+</div>
+
+<!-- SLIDE 5: CARBON SINKS & HYDROSPHERE -->
+<div class="slide" id="s5" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--blue)">Carbon Sinks</div>
+  <h2 class="slide-title">Forests and oceans absorb CO₂</h2>
+<div class="slide-content">
+  <p class="slide-body">Not all the CO₂ humans release stays in the atmosphere. Natural <strong>carbon sinks</strong> absorb some of it — but they have limits.</p>
+  <div class="two-col">
+    <div class="col-card" style="background:var(--green-bg);border-color:var(--green-bd)">
+      <span class="col-icon">🌳</span>
+      <div class="col-title" style="color:var(--green)">Forests</div>
+      <div class="col-body">Trees absorb CO₂ through photosynthesis and store carbon in their wood and roots. 50% of biomass by weight is carbon. Deforestation releases this stored carbon.</div>
+    </div>
+    <div class="col-card" style="background:var(--blue-bg);border-color:var(--blue-bd)">
+      <span class="col-icon">🌊</span>
+      <div class="col-title" style="color:var(--blue)">Oceans (the hydrosphere)</div>
+      <div class="col-body">The <strong>hydrosphere</strong> — all water on Earth — absorbs about 25–30% of all human CO₂ emissions. Oceans also absorb heat, acting as a giant buffer that slows surface warming.</div>
+    </div>
+  </div>
+  <div class="card red">
+    <div class="card-label red">⚠️ Ocean acidification — the chemistry</div>
+    <p>When CO₂ dissolves in seawater, it reacts with water (H₂O) to form <strong>carbonic acid (H₂CO₃)</strong>, which then breaks apart into bicarbonate and a proton — making the water more acidic:</p>
+    <div style="text-align:center;padding:0.5rem 0;font-size:0.9rem">
+      \( 	{CO}_2 + {H}_2{O} > {HCO}_3^- + {H}^+ \)
+    </div>
+    <p>More H⁺ ions = more acidic seawater. This threatens coral reefs and shellfish that need carbonate ions to build their shells — rising CO₂ makes those carbonate ions less available.</p>
+  </div>
+  <!-- <div class="card teal">
+    <div class="card-label teal">🌿 Carbon in biomass</div>
+    <p>Forests store carbon in their wood, leaves, and soil. The general molecular formula for biomass (living organic matter) is approximately <strong>C<sub>106</sub>H<sub>181</sub>O<sub>45</sub>N</strong> — showing that carbon (C) is by far the most abundant element by mass.</p>
+    <p style="margin-top:0.4rem">About <strong>50% of the dry mass of any plant is carbon</strong>. That carbon was once CO₂ in the atmosphere, captured by photosynthesis: <strong>CO<sub>2</sub> + H<sub>2</sub>O + light energy → glucose + O<sub>2</sub></strong>. When forests are cut and burned, all that stored carbon returns to the atmosphere.</p>
+  </div> -->
+</div>
+  <div class="defn-bar">
+    <strong>hydrosphere</strong> <em>(HY-dro-sfeer)</em> — all water on Earth: oceans, lakes, rivers, ice, and water vapour &nbsp;|&nbsp; <strong>ocean acidification</strong> — the process by which oceans become more acidic as they absorb CO₂
+  </div>
+</div>
+
+
+<!-- SLIDE 5b: HOW WE QUANTIFY GASES -->
+<div class="slide" id="s5b" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--blue)">Measuring Gases</div>
+  <h2 class="slide-title">How do we measure gases?</h2>
+<div class="slide-content">
+  <p class="slide-body">Scientists use different units to describe how much of a gas exists. Understanding these units helps you read and compare data.</p>
+  <p class="rc-tap">👆 Tap each unit to see what it means</p>
+  <div class="reveal-cards">
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">⚖️</span><div><div class="rc-name">ppm — parts per million</div><div class="rc-detail">How many molecules of a gas exist in every million air molecules. CO₂ is currently ~422 ppm. Useful for gases present in small but significant amounts.</div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🔬</span><div><div class="rc-name">ppb — parts per billion</div><div class="rc-detail">How many molecules in every billion air molecules. Used for trace gases like methane (~1,900 ppb = 1.9 ppm) and nitrous oxide (~330 ppb). 1 ppm = 1,000 ppb.</div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">📊</span><div><div class="rc-name">% — percentage (mass fraction)</div><div class="rc-detail">A mass fraction tells you what proportion of a mixture's total mass is made up of one particular component. For the atmosphere: Nitrogen = 78%, Oxygen = 21%, Argon = 0.93% — these are measured by mass. CO₂ = only about 0.042% by mass. This seems tiny, but mass fraction alone does not tell you how powerful a gas is — which is why we also need ppm and GWP.</div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🌍</span><div><div class="rc-name">GtC — gigatons of carbon</div><div class="rc-detail">Used to measure how much carbon is released or stored globally. "Giga" means one billion — so 1 gigaton = 1,000,000,000 tonnes (that is 1 followed by 9 zeros). All human activities combined currently release about 10 GtC per year. Important: this is carbon (C) only. CO₂ is heavier than C alone because each carbon atom carries two oxygen atoms. To convert: 1 GtC = 3.67 GtCO₂. So 10 GtC of carbon emissions = about 37 GtCO₂. Always check which unit a source is using.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 6: GWP -->
+<div class="slide" id="s6" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--orange)">Comparing Greenhouse Gases</div>
+  <h2 class="slide-title">Not all gases are equal</h2>
+<div class="slide-content">
+  <p class="slide-body">To compare greenhouse gases, scientists use <strong>Global Warming Potential (GWP)</strong> — how much warming one unit of a gas causes compared to CO₂.</p>
+  <div class="card amber">
+    <div class="card-label amber">📖 What does "reference = 1" mean?</div>
+    <p>In science, a <strong>reference</strong> is a standard we use to compare everything else against. Here, CO₂ is given a value of 1. A gas with a value of 80× is 80 times more warming than the same mass of CO₂.</p>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Gas (formula)</th><th>Amount in air</th><th>Power vs CO₂ (20yr)</th><th>Lifetime</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CO₂</strong></td><td>A lot — 422 ppm</td><td>1× (reference)</td><td>Centuries</td></tr>
+        <tr><td><strong>Methane (CH₄)</strong></td><td>Small — 1.9 ppm</td><td><strong style="color:var(--red)">~80×</strong></td><td>~12 years</td></tr>
+        <tr><td><strong>Nitrous oxide (N₂O)</strong></td><td>Tiny — 0.33 ppm</td><td>~270×</td><td>~120 years</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="flip-card" onclick="this.classList.toggle('flipped')" style="height:110px;margin-bottom:0.65rem">
+    <div class="flip-card-inner">
+      <div class="flip-front" style="border-color:var(--amber-bd);background:var(--amber-bg)">
+        <div class="flip-emoji">🧠</div>
+        <div class="flip-q" style="color:var(--amber)">Looking at the table — which gas would you prioritise cutting to slow warming fastest? Why?</div>
+        <div class="flip-hint" style="color:var(--amber)">👆 Tap to discuss →</div>
+      </div>
+      <div class="flip-back amber">
+        <div class="flip-a">Methane — it is 80× more powerful over 20 years and breaks down in ~12 years, so cuts have rapid near-term impact. But CO₂ is also essential long-term because it persists for centuries. Ideally: cut both, but methane gives the fastest results.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card amber">
+    <div class="card-label amber">💡 Scientific thinking</div>
+    <p>We cannot judge a gas by one number alone. We must consider: <strong>how much of it exists</strong>, <strong>how long it lasts</strong>, and <strong>how powerful it is</strong>. Good science always looks at the full picture.</p>
+  </div>
+</div>
+  <!-- <div class="defn-bar"> -->
+    <!-- <strong>ppm</strong> — parts per million; 422 ppm CO₂ = 422 out of every 1,000,000 air molecules are CO₂ -->
+  <!-- </div> -->
+</div>
+
+<!-- SLIDE 7: KEELING CURVE -->
+<div class="slide" id="s7" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--blue)">Measuring CO₂</div>
+  <h2 class="slide-title">The Keeling Curve</h2>
+<div class="slide-content">
+  <p class="slide-body">Since 1958, scientists have measured CO₂ in the atmosphere every day at <strong>Mauna Loa Observatory</strong> in Hawaii. The result is one of the most important graphs in science.</p>
+  <div class="card blue">
+    <div class="card-label blue">📊 What the graph shows</div>
+    <p>CO₂ has risen from <strong>313 ppm in 1958</strong> to <strong>422 ppm in 2024</strong> — a 35% increase.</p>
+  </div>
+  <a class="link-btn big orange" href="https://gml.noaa.gov/ccgg/trends/" target="_blank" style="margin-bottom:0.65rem">📊 Let's look at the real graph together → gml.noaa.gov/ccgg/trends</a>
+  <div class="flip-card" onclick="this.classList.toggle('flipped')" style="height:130px;margin-bottom:0.6rem">
+    <div class="flip-card-inner">
+      <div class="flip-front" style="border-color:var(--teal-bd);background:var(--teal-bg)">
+        <div class="flip-emoji">🌿</div>
+        <div class="flip-q" style="color:var(--teal)">Why does the Keeling Curve zigzag up and down every year?<br>What do you think?</div>
+        <div class="flip-hint" style="color:var(--teal)">Tap to reveal the answer →</div>
+      </div>
+      <div class="flip-back teal">
+        <div class="flip-a">Northern Hemisphere plants absorb CO₂ in spring and summer (photosynthesis), then release it in autumn and winter when they decay. More land = more plants = this pattern dominates globally.</div>
+      </div>
+    </div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>observatory</strong> <em>(ob-ZER-va-tor-ee)</em> — a place where scientists watch and measure things in the sky or atmosphere
+  </div>
+</div>
+
+<!-- SLIDE 8: ICE CORES -->
+<div class="slide" id="s8" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--blue)">800,000 Years of Evidence</div>
+  <h2 class="slide-title">What ancient ice tells us</h2>
+<div class="slide-content">
+  <p class="slide-body">We can only directly measure CO₂ since 1958. But <strong>ice cores</strong> from Antarctica extend the record back 800,000 years.</p>
+  <div class="card blue">
+    <div class="card-label blue">🔬 How it works</div>
+    <p>Each year, snow falls and compresses into ice, trapping tiny <strong>air bubbles</strong>. Scientists drill down approximately <strong>3 km</strong> to reach ice that is 800,000 years old. The bubbles contain real samples of ancient atmosphere.</p>
+    <p style="margin-top:0.4rem">Ancient temperatures are measured by analysing <strong>oxygen isotopes</strong> in the ice itself — different isotopes of oxygen are incorporated into ice in different proportions depending on the temperature at the time it formed, giving scientists a record of past temperatures.</p>
+  </div>
+  <ul class="sl blue">
+    <li>CO₂ and temperature <strong>always rose and fell together</strong> over 800,000 years</li>
+    <li>CO₂ naturally ranged from 180–280 ppm — never above 300 ppm</li>
+    <li>Today: <strong>422 ppm</strong> — higher than at any point in 800,000 years</li>
+    <li>The sharp jump on the right of the graph = the <strong>Industrial Revolution</strong></li>
+  </ul>
+  <div class="card amber">
+    <div class="card-label amber">🕳️ Fun fact — the deepest hole ever drilled</div>
+    <p>The Kola Superdeep Borehole in Russia was drilled to <strong>12,262 metres</strong> — the deepest artificial point on Earth. At that depth, temperatures reached <strong>180°C</strong> — far hotter than expected and so hot that drilling had to stop. Ice cores go only ~3 km down, but through ice rather than rock — which is much easier to drill through!</p>
+  </div>
+  <a class="link-btn big blue" href="https://science.nasa.gov/climate-change/evidence/" target="_blank">📊 See the 800,000-year graph — NASA →</a>
+</div>
+  <div class="defn-bar">
+    <strong>ice core</strong> — a tube of ancient ice drilled from a glacier; air bubbles inside contain old atmosphere &nbsp;|&nbsp; <strong>Industrial Revolution</strong> <em>(in-DUS-tree-ul)</em> — ~1750 onward; when large-scale burning of coal began
+  </div>
+</div>
+
+<!-- SLIDE 9: INDICATORS OF CLIMATE CHANGE -->
+<div class="slide" id="s9" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--red)">Indicators of Climate Change</div>
+  <h2 class="slide-title">Signs that climate is changing</h2>
+<div class="slide-content">
+  <p class="slide-body">Scientists look for <strong>indicators</strong> — measurable signs that the climate is changing. These come from many different sources.</p>
+  <div class="toggle-group">
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🧊</span>Melting ice and rising sea levels <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Glaciers and polar ice sheets are shrinking. As ice melts, sea levels rise — threatening coastal cities and islands. Arctic sea ice is also thinning, reducing habitat for polar bears and other cold-adapted species.<br><br>There is also a dangerous feedback loop connected to a principle you are learning in physics: <strong>white surfaces reflect all wavelengths of light</strong> (high albedo), while <strong>dark surfaces absorb all wavelengths</strong> (low albedo). It is the absorption of light that generates heat. Ice is white and highly reflective — it bounces sunlight back to space. Dark ocean water absorbs sunlight and converts it to heat. So when ice melts and exposes dark ocean, more solar energy is absorbed, causing more warming, melting more ice. Less ice → darker surface → more heat absorbed → even less ice.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🌡️</span>Heatwaves and extreme weather <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Heatwaves are becoming longer and more intense. Storms are becoming stronger. Droughts and floods are more frequent. In Canada, hotter and drier summers have caused larger forest fires.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🐠</span>Effects on living things <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Coral reefs are bleaching and dying as oceans warm and acidify. Migratory birds are arriving earlier. Some species are shifting toward the poles. Crop harvests are disrupted by changing rainfall patterns.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🌾</span>Food and water security <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Changing rainfall patterns affect when crops can be planted. Glaciers that supply freshwater to millions of people are shrinking. In some regions, growing seasons are getting longer; in others, farmland is becoming desert.</div>
+    </div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>indicator</strong> <em>(IN-di-kay-tor)</em> — a measurable sign that something is changing &nbsp;|&nbsp; <strong>albedo</strong> <em>(al-BEE-doh)</em> — how reflective a surface is; ice has high albedo (reflects sunlight); dark ocean has low albedo (absorbs heat)
+  </div>
+</div>
+
+<!-- SLIDE 10: TEMPERATURE TREND -->
+<div class="slide" id="s10" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--red)">Global Temperature</div>
+  <h2 class="slide-title">2024: the hottest year on record</h2>
+<div class="slide-content">
+  <div class="stat-block">
+    <div class="stat-number" style="color:var(--red)">1.5°C</div>
+    <div class="stat-label">above pre-industrial levels — for the first time, in 2024</div>
+  </div>
+  <div class="flip-card" onclick="this.classList.toggle('flipped')" style="height:100px;margin-bottom:0.65rem">
+    <div class="flip-card-inner">
+      <div class="flip-front" style="border-color:var(--red-bd);background:var(--red-bg)">
+        <div class="flip-emoji">🌡️</div>
+        <div class="flip-q" style="color:var(--red)">1.5°C sounds like a very small number. Why might it be a serious problem for the planet?</div>
+        <div class="flip-hint" style="color:var(--red)">👆 Tap to reveal →</div>
+      </div>
+      <div class="flip-back red">
+        <div class="flip-a">This is the average across the entire planet. Even small shifts in average temperature cause large changes in weather patterns, ice cover, sea levels, and ecosystems — just as a fever of 2°C above normal makes you seriously ill.</div>
+      </div>
+    </div>
+  </div>
+  <p class="slide-body" style="font-size:0.84rem">🎨 <strong>The Warming Stripes are a visual representation of climate change</strong> — each stripe = one year. Blue = cooler. Red = warmer.</p>
+  <a class="link-btn" style="color:var(--red);border-color:var(--red-bd);background:var(--red-bg)" href="https://showyourstripes.info/" target="_blank">🌡️ Let's look at the Warming Stripes →</a>
+  <p style="font-size:0.7rem;color:var(--ink-dim);margin-top:0.2rem">Source: <a href="https://www.climate.gov" target="_blank" style="color:var(--blue)">NOAA</a> · <a href="https://showyourstripes.info" target="_blank" style="color:var(--blue)">Ed Hawkins</a></p>
+</div>
+  <div class="defn-bar">
+    <strong>pre-industrial</strong> <em>(pree-in-DUS-tree-ul)</em> — before large factories, roughly before 1750 &nbsp;|&nbsp; <strong>global average temperature</strong> — average of thousands of measurements across all oceans and land
+  </div>
+</div>
+
+<!-- SLIDE 11: YOUR CARBON FOOTPRINT -->
+<div class="slide" id="s11" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--orange)">Individual Action</div>
+  <h2 class="slide-title">What is a carbon footprint?</h2>
+<div class="slide-content">
+  <p class="slide-body">Your <strong>carbon footprint</strong> is the total amount of greenhouse gases produced by your actions — travelling, eating, using electricity, and buying things.</p>
+  <div class="toggle-group">
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">✈️</span>Travel <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Flying produces large amounts of CO₂ per passenger. Car travel produces less. Walking, cycling, and public transport produce least. The further you travel, the larger the footprint.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🍖</span>Food <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Beef and lamb have the highest footprint (methane from livestock + land use). Plant-based foods have much lower footprints. Eating locally grown food reduces transport emissions.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">💡</span>Energy at home <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Heating homes with gas or oil releases CO₂. Electricity from coal is high-footprint; from solar or wind is very low. LED bulbs, turning off lights, and not over-heating rooms all reduce emissions.</div>
+    </div>
+  </div>
+  <div class="card teal">
+    <div class="card-label teal">🌍 Small actions add up</div>
+    <p>Individual actions matter — especially when millions of people make the same choices. Walking or cycling instead of driving, reducing meat consumption, and using less electricity all reduce your carbon footprint.</p>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>carbon footprint</strong> <em>(KAR-bun FOOT-print)</em> — the total greenhouse gases produced by a person's activities, measured in units of CO₂
+  </div>
+</div>
+
+<!-- SLIDE 12: CAN WE STOP? -->
+<div class="slide" id="s12" data-part="Climate Change">
+  <div class="slide-label" style="color:var(--orange)">The Challenge</div>
+  <h2 class="slide-title">Can we stop?</h2>
+<div class="slide-content">
+  <p class="slide-body">We cannot stop using all fossil fuels immediately — billions of people depend on them. But we can reduce in stages:</p>
+  <ul class="sl orange">
+    <li><strong>Near term:</strong> Stop CO₂ from rising — reach the peak and start going down</li>
+    <li><strong>Medium term:</strong> Replace fossil fuels with clean energy — solar, wind, electric vehicles</li>
+    <li><strong>Long term:</strong> Reach <strong>net zero</strong> — removing as much CO₂ as we add</li>
+  </ul>
+  <div class="fact-row">
+    <div class="fact-chip chip-orange">🇪🇺 EU: net zero by 2050</div>
+    <div class="fact-chip chip-orange">🇨🇳 China: 2060</div>
+    <div class="fact-chip chip-orange">🇮🇳 India: 2070</div>
+  </div>
+  <div class="card red">
+    <div class="card-label red">⚠️ Some warming is already locked in</div>
+    <p>Even if we reached net zero today, temperatures would still rise a little for 2–3 more decades — the ocean has stored heat that will slowly release. This is why acting sooner matters so much.</p>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>net zero</strong> <em>(net ZEE-roh)</em> — when CO₂ released equals CO₂ removed; the total in the atmosphere stops rising &nbsp;|&nbsp; <strong>commitment</strong> <em>(kuh-MIT-ment)</em> — a formal promise to do something
+  </div>
+</div>
+
+<!-- SLIDE 13: PART 2 COVER -->
+<div class="slide part-cover-slide" id="s13" data-part="Hope" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7)">
+  <div class="part-cover-inner">
+    <div class="part-num-bg">02</div>
+    <div class="part-eyebrow" style="color:var(--green)">Part 2 of 2</div>
+    <h2 class="part-big-title" style="color:var(--ink)">Hope</h2>
+    <p class="part-desc">Real changes happening right now. Genuine reasons to be optimistic.</p>
+  </div>
+</div>
+
+<!-- SLIDE 14: PAKISTAN SOLAR -->
+<div class="slide" id="s14" data-part="Hope">
+  <div class="slide-label" style="color:var(--green)">Case Study</div>
+  <h2 class="slide-title">Pakistan's solar revolution</h2>
+<div class="slide-content">
+  <p class="slide-body">When electricity prices rose <strong>155% in three years</strong>, ordinary Pakistanis started buying cheap solar panels themselves. No government program. A people-led revolution.</p>
+  <div class="two-col">
+    <div class="col-card" style="background:var(--green-bg);border-color:var(--green-bd)">
+      <span class="col-icon">☀️</span>
+      <div class="col-title" style="color:var(--green)">5% → 25%</div>
+      <div class="col-body">Solar share of Pakistan's electricity — 2021 to 2025</div>
+    </div>
+    <div class="col-card" style="background:var(--green-bg);border-color:var(--green-bd)">
+      <span class="col-icon">🔋</span>
+      <div class="col-title" style="color:var(--green)">Energy independence</div>
+      <div class="col-body">Less reliance on imported fossil fuels — more stability, less exposure to price spikes</div>
+    </div>
+  </div>
+  <ul class="sl green">
+    <li>In 2024, Pakistan installed ALOT of solar</li>
+    <li>Rural schools and health clinics had reliable electricity for the first time</li>
+    <li>By generating their own solar power, communities are insulated against surges in global fuel prices or disruptions in supply — greater energy autonomy for the nation</li>
+    <li>This shows that developing countries can skip the polluting path richer countries took and build clean energy from the start</li>
+  </ul>
+  <a class="link-btn green" href="https://www.wri.org/insights/pakistan-solar-energy-boom" target="_blank">📖 Source: World Resources Institute →</a>
+</div>
+  <div class="defn-bar">
+    <strong>solar panel</strong> <em>(SOH-lar PAN-ul)</em> — a device that converts sunlight directly into electricity &nbsp;|&nbsp; <strong>fossil fuel imports</strong> — oil, coal or gas bought from another country
+  </div>
+</div>
+
+<!-- SLIDE 15: GLOBAL SOLAR -->
+<div class="slide" id="s15" data-part="Hope">
+  <div class="slide-label" style="color:var(--amber)">Global Energy</div>
+  <h2 class="slide-title">Solar — better than anyone expected</h2>
+<div class="slide-content">
+  <div class="stat-block">
+    <div class="stat-number green">90%</div>
+    <div class="stat-label">Reduction in solar panel cost since 2010</div>
+  </div>
+  <ul class="sl amber">
+    <li>Solar energy deployment and cost reductions continuously beat global predictions</li>
+    <li>"It took the world 68 years to reach 1 TW of solar, and just two years to double it" (Climate Council, 2025)</li>
+    <li>Prediction is that renewables will be the world's top power source by 2026 (Climate Council, 2025)</li>
+    <li>Renewables frequently beat fossil fuels on cost per MWh</li>
+    <li>Globally, solar grew 30% in 2025</li>
+    <li>In 2024, solar overtook coal as an electricity source in the EU for the first time</li>
+  </ul>
+  <div class="fact-row">
+    <div class="fact-chip chip-amber">🇩🇰 Denmark: 80% renewable</div>
+    <div class="fact-chip chip-amber">🇩🇯 Djibouti: 67% renewable</div>
+    <div class="fact-chip chip-amber">🇱🇹 Lithuania: 60% renewable</div>
+  </div>
+  <p style="font-size:0.72rem;color:var(--ink-dim)">Source: <a href="https://www.climatecouncil.org.au/11-countries-leading-the-charge-on-renewable-energy/" target="_blank" style="color:var(--blue)">Climate Council - 11 Countries Leading the Charge on Renewable Energy 2025</a> 
+    · <a href="https://ember-energy.org/latest-insights/european-electricity-review-2025/" target="_blank" style="color:var(--blue)">Ember - European Electricity Review 2025 (nice graphs!)</a></p>
+</div>
+  <div class="defn-bar">
+    <strong>renewable</strong> <em>(ruh-NOO-uh-bul)</em> — energy from sources that never run out, like sunlight or wind
+  </div>
+</div>
+
+<!-- SLIDE 16: METHANESAT -->
+<div class="slide" id="s16" data-part="Hope">
+  <div class="slide-label" style="color:var(--purple)">Satellite Technology</div>
+  <h2 class="slide-title">MethaneSAT — finding leaks from space</h2>
+<div class="slide-content">
+  <p class="slide-body">To cut methane emissions, you first have to <em>find</em> them — surprisingly hard from the ground.</p>
+  <div class="card purple">
+    <div class="card-label purple">🔭 How it worked</div>
+    <p>MethaneSAT is a satellite that orbits Earth 15 times per day (launched March 2024). It detects methane by measuring which wavelengths of sunlight are "missing" after passing through the atmosphere. It maps leaks across many countries — including leaks too small or spread out to detect any other way.</p>
+  </div>
+  <div class="card red">
+    <div class="card-label red">🔍 A striking finding</div>
+    <p>Texas and New Mexico (states in the USA) share the same oil fields and companies — yet Texas had twice the methane leaks. The difference? New Mexico introduced stricter regulations in 2021. Independent data creates accountability.</p>
+  </div>
+  <a class="link-btn" style="color:var(--amber);border-color:var(--amber-bd);background:var(--amber-bg)" href="https://www.methanesat.org/" target="_blank">🛰️ methanesat.org →</a>
+</div>
+  <div class="defn-bar">
+    <strong>satellite</strong> <em>(SAT-uh-lyt)</em> — a machine in orbit around Earth gathering information &nbsp;|&nbsp; <strong>accountable</strong> <em>(uh-KOWN-tuh-bul)</em> — responsible for actions; unable to hide what you are doing
+  </div>
+</div>
+
+<!-- SLIDE 17: MORE HOPE -->
+<div class="slide" id="s17" data-part="Hope">
+  <div class="slide-label" style="color:var(--teal)">More Reasons for Hope</div>
+  <h2 class="slide-title">Action happening right now</h2>
+<div class="slide-content">
+  <p class="rc-tap">👆 Tap each one to learn more</p>
+  <div class="reveal-cards">
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🌬️</span><div><div class="rc-name">Carbon capture</div><div class="rc-detail">New machines pull CO₂ directly out of the air and store it underground. Still expensive, but costs falling fast. <a href="https://www.iea.org/reports/direct-air-capture-2022" target="_blank" style="color:var(--teal)">IEA — Direct Air Capture →</a></div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🌳</span><div><div class="rc-name">Reforestation</div><div class="rc-detail">The UN's Decade on Ecosystem Restoration (2021–2030) aims to restore 350 million hectares of land. Forests are natural carbon sinks. <a href="https://www.decadeonrestoration.org/" target="_blank" style="color:var(--teal)">UN Restoration Decade →</a></div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🚗</span><div><div class="rc-name">Electric vehicles</div><div class="rc-detail">17 million EVs sold in 2024 — 1 in 5 new cars. Battery costs down 90% since 2010. As electricity grids clean up, EVs automatically become cleaner too. <a href="https://www.iea.org/reports/global-ev-outlook-2024" target="_blank" style="color:var(--teal)">IEA EV Outlook →</a></div></div></div>
+    <div class="reveal-card" onclick="revealCard(this)"><span class="rc-icon">🤝</span><div><div class="rc-name">International agreements</div><div class="rc-detail">195 countries signed the Paris Agreement. 150+ signed the Global Methane Pledge (reduce methane 30% by 2030). Largest coordinated climate action in history. <a href="https://unfccc.int/process-and-meetings/the-paris-agreement" target="_blank" style="color:var(--teal)">Paris Agreement →</a></div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 18: FINAL THOUGHT -->
+<div class="slide" id="s18" data-part="The End">
+  <div class="final-inner">
+    <div>
+      <div class="slide-label" style="color:var(--green)">A final thought</div>
+      <h2 class="slide-title" style="font-size:clamp(1.3rem,5vw,1.9rem)">The actions we take in the next decade will shape the climate of the next century.</h2>
+      <div style="width:36px;height:3px;background:var(--green);border-radius:2px;margin:0.75rem 0"></div>
+      <p class="slide-body">To do this well, we need <strong>strong science</strong> to measure what is happening accurately, and <strong>new technology</strong> to reduce our impact. Both require curious, educated people who ask good questions.</p>
+    </div>
+    <div>
+      <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:0.5rem">Key Resources</p>
+      <div class="resources-list">
+        <a href="https://gml.noaa.gov/ccgg/trends/" target="_blank">📊 Keeling Curve — NOAA</a>
+        <a href="https://science.nasa.gov/climate-change/evidence/" target="_blank">🧊 Ice Core Record — NASA</a>
+        <a href="https://showyourstripes.info/" target="_blank">🌡️ Warming Stripes — Ed Hawkins</a>
+        <a href="https://www.methanesat.org/" target="_blank">🛰️ MethaneSAT</a>
+        <a href="https://www.wri.org/insights/pakistan-solar-energy-boom" target="_blank">☀️ Pakistan Solar — WRI</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 19: ABOUT -->
+<div class="slide" id="s19" data-part="About">
+  <div class="slide-label" style="color:var(--ink-dim)">About this material</div>
+  <h2 class="slide-title">Sources &amp; how this was made</h2>
+<div class="slide-content">
+  <div class="card blue">
+    <div class="card-label blue">📚 Sources</div>
+    <ul class="sl blue" style="margin-top:0.3rem">
+      <li><strong>Textbook:</strong> <em>Grade 10 Science Textbook</em>, CK-12 Foundation / Ontario Virtual School. Authors: James H. Dann Ph.D., Dana Desonie Ph.D., Douglas Wilkin Ph.D., and others.</li>
+      <li><strong>Curriculum:</strong> <em>The Ontario Curriculum, Grades 9 and 10: Science</em> (2008, Revised). Ontario Ministry of Education. Strand D — Earth and Space Science: Climate Change, SNC2D.</li>
+      <li><strong>Data:</strong> NOAA, NASA, Eurostat, Ember, World Resources Institute, MethaneSAT</li>
+    </ul>
+  </div>
+  <div class="card amber">
+    <div class="card-label amber">🤖 How this was made</div>
+    <p>Created using <strong>Claude Sonnet 4.5</strong> (Anthropic) with a human teacher. The teacher provided content and reviewed every version for accuracy. All facts were checked against the primary sources above.</p>
+  </div>
+  <div class="card red">
+    <div class="card-label red">⚠️ A note on AI accuracy</div>
+    <p>AI tools can make mistakes. If you are unsure about any fact, check the source links on each slide. Good science always goes back to the original data.</p>
+  </div>
+</div>
+</div>
+
+</div><!-- end slide-viewport -->
+
+<div id="bottom-nav">
+  <button class="nav-btn" id="prev-btn" onclick="prevSlide()" disabled>← Back</button>
+  <div id="jump-dots"></div>
+  <button class="nav-btn primary" id="next-btn" onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const TOTAL = slides.length;
+let current = 0;
+const partColors = {
+  'Session 2':'#dc2626',
+  'Climate Change':'#dc2626',
+  'Hope':'#16a34a',
+  'The End':'#0d9488',
+  'About':'#78716c'
+};
+function updateUI() {
+  document.getElementById('slide-counter').textContent = `${current+1} / ${TOTAL}`;
+  const part = slides[current].dataset.part || '';
+  const lbl = document.getElementById('part-label');
+  lbl.textContent = part;
+  const color = partColors[part] || '#78716c';
+  lbl.style.background = color+'15'; lbl.style.color = color; lbl.style.border = `1px solid ${color}40`;
+  document.getElementById('progress-fill').style.width = `${((current+1)/TOTAL)*100}%`;
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').textContent = current === TOTAL-1 ? 'Done ✓' : 'Next →';
+  const dotsEl = document.getElementById('jump-dots');
+  dotsEl.innerHTML = '';
+  slides.forEach((s,i) => {
+    const d = document.createElement('button');
+    d.className = 'jump-dot' + (i===current?' active':'');
+    d.onclick = () => goToSlide(i);
+    dotsEl.appendChild(d);
+  });
+}
+function goToSlide(n, dir) {
+  if (n<0||n>=TOTAL||n===current) return;
+  const fwd = (dir===undefined ? n>current : dir>0);
+  const out = slides[current], inc = slides[n];
+  inc.classList.add(fwd?'pre-enter-right':'pre-enter-left');
+  inc.getBoundingClientRect();
+  out.classList.add(fwd?'exit-left':'exit-right');
+  out.classList.remove('active');
+  inc.classList.remove('pre-enter-right','pre-enter-left');
+  inc.classList.add('active');
+  const sc = inc.querySelector('.slide-content');
+  if (sc) sc.scrollTop = 0; else inc.scrollTop = 0;
+  current = n;
+  setTimeout(() => { out.classList.remove('exit-left','exit-right'); }, 280);
+  updateUI();
+}
+function nextSlide() { goToSlide(current+1,1); }
+function prevSlide() { goToSlide(current-1,-1); }
+let tx=0,ty=0;
+document.getElementById('slide-viewport').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('slide-viewport').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){dx<0?nextSlide():prevSlide();}
+},{passive:true});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')nextSlide();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevSlide();
+});
+function toggleItem(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  header.closest('.toggle-group').querySelectorAll('.toggle-body').forEach(b=>b.classList.remove('open'));
+  header.closest('.toggle-group').querySelectorAll('.toggle-header').forEach(h=>h.classList.remove('open'));
+  if(!isOpen){body.classList.add('open');header.classList.add('open');}
+}
+function revealCard(card) { card.classList.toggle('revealed'); }
+function flipCard(card) { card.classList.toggle('flipped'); }
+slides[0].style.opacity='1';
+slides[0].style.transform='translateX(0)';
+slides[0].style.pointerEvents='auto';
+slides[0].classList.add('active');
+updateUI();
+</script>
+</body>
+</html>

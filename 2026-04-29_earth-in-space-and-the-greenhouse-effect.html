@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌍 Earth & Climate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,700&display=swap');
+:root{--sky:#38bdf8;--sky-dark:#0ea5e9;--sun:#fbbf24;--sun-dark:#f59e0b;--green:#34d399;--green-dark:#059669;--coral:#fb7185;--coral-dark:#e11d48;--purple:#a78bfa;--purple-dark:#7c3aed;--orange:#fb923c;--white:#ffffff;--text-dark:#1e293b;--text-mid:#334155;--text-light:#64748b;--r:16px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;background:#dbeafe;color:var(--text-dark);display:flex;flex-direction:column;height:100dvh}
+#progress-wrap{height:6px;background:rgba(255,255,255,0.4);flex-shrink:0;position:relative;z-index:10}
+#progress-fill{height:100%;background:linear-gradient(90deg,var(--sun),var(--coral));transition:width 0.4s cubic-bezier(.4,0,.2,1);border-radius:0 3px 3px 0}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 1rem;flex-shrink:0;background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.6)}
+#slide-counter{font-size:0.78rem;font-weight:700;color:var(--text-light);letter-spacing:0.05em}
+#part-label{font-size:0.72rem;font-weight:800;padding:0.2rem 0.65rem;border-radius:20px;letter-spacing:0.06em;text-transform:uppercase}
+#slide-viewport{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;padding:1rem 1.25rem 0;overflow:hidden;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(30px);transition:none;will-change:opacity,transform}
+.slide::-webkit-scrollbar{display:none}
+.slide-content{flex:1;overflow-y:auto;padding:0 0 0.75rem;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column}
+.slide-content::-webkit-scrollbar{display:none}
+.slide.active{opacity:1;pointer-events:auto;transform:translateX(0);transition:opacity 0.28s ease,transform 0.28s cubic-bezier(.4,0,.2,1)}
+.slide.exit-left{opacity:0;transform:translateX(-30px);transition:opacity 0.22s ease,transform 0.22s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.slide.exit-right{opacity:0;transform:translateX(30px);transition:opacity 0.22s ease,transform 0.22s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.slide.pre-enter-right{transform:translateX(30px);opacity:0;transition:none}
+.slide.pre-enter-left{transform:translateX(-30px);opacity:0;transition:none}
+#bottom-nav{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1.25rem;background:rgba(255,255,255,0.6);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.7);flex-shrink:0;gap:1rem}
+.nav-btn{display:flex;align-items:center;gap:0.4rem;background:var(--white);border:2px solid rgba(0,0,0,0.08);border-radius:50px;padding:0.55rem 1.1rem;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.88rem;color:var(--text-dark);cursor:pointer;transition:all 0.15s;box-shadow:0 2px 6px rgba(0,0,0,0.08);user-select:none}
+.nav-btn:active{transform:scale(0.95)}
+.nav-btn.primary{background:linear-gradient(135deg,var(--sky-dark),var(--sky));color:white;border-color:transparent;box-shadow:0 4px 12px rgba(14,165,233,0.35)}
+.nav-btn:disabled{opacity:0.35;cursor:default}
+#jump-dots{display:flex;gap:5px;align-items:center;flex:1;justify-content:center;flex-wrap:wrap}
+.jump-dot{width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,0.15);cursor:pointer;transition:all 0.2s;border:none;padding:0}
+.jump-dot.active{background:var(--sky-dark);width:20px;border-radius:4px}
+/* Components */
+.slide-hero{text-align:center;padding:0.75rem 0 0.4rem}
+.hero-emoji{font-size:3.5rem;display:block;margin-bottom:0.4rem;animation:pop 0.5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.slide-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.3rem,5vw,1.9rem);font-weight:900;line-height:1.15;color:var(--text-dark);margin-bottom:0.5rem}
+.slide-subtitle{font-size:0.88rem;font-weight:600;color:var(--text-light);margin-bottom:0.9rem}
+.slide-body{font-size:0.95rem;line-height:1.7;color:var(--text-mid);margin-bottom:0.7rem}
+.slide-body strong{color:var(--text-dark);font-weight:800}
+.card{background:var(--white);border-radius:var(--r);padding:0.9rem 1rem;margin-bottom:0.7rem;box-shadow:0 2px 10px rgba(0,0,0,0.07);border:1.5px solid rgba(0,0,0,0.06)}
+.card-sky{border-color:var(--sky);background:#f0f9ff}
+.card-sun{border-color:var(--sun);background:#fffbeb}
+.card-green{border-color:var(--green);background:#f0fdf4}
+.card-coral{border-color:var(--coral);background:#fff1f2}
+.card-purple{border-color:var(--purple);background:#faf5ff}
+.card-title{font-weight:800;font-size:0.82rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:0.4rem}
+.card-title.sky{color:var(--sky-dark)}.card-title.sun{color:var(--sun-dark)}.card-title.green{color:var(--green-dark)}.card-title.coral{color:var(--coral-dark)}.card-title.purple{color:var(--purple-dark)}
+ul.sl{list-style:none;padding:0;display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.7rem}
+ul.sl li{background:var(--white);border-radius:10px;padding:0.55rem 0.9rem 0.55rem 2.1rem;position:relative;font-size:0.91rem;line-height:1.55;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.05)}
+ul.sl li::before{position:absolute;left:0.6rem;top:0.55rem;font-size:0.82rem}
+ul.sl.sky li::before{content:'🔵'}ul.sl.sun li::before{content:'⭐'}ul.sl.green li::before{content:'🌿'}ul.sl.coral li::before{content:'🔴'}ul.sl.check li::before{content:'✅'}ul.sl.purple li::before{content:'💜'}
+ul.sl li strong{font-weight:800;color:var(--text-dark)}
+.fact-row{display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:0.7rem}
+.fact-chip{background:var(--white);border-radius:50px;padding:0.38rem 0.85rem;font-size:0.8rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.08);border:1.5px solid rgba(0,0,0,0.07)}
+.chip-sky{color:var(--sky-dark);border-color:var(--sky)}.chip-sun{color:var(--sun-dark);border-color:var(--sun)}.chip-green{color:var(--green-dark);border-color:var(--green)}.chip-coral{color:var(--coral-dark);border-color:var(--coral)}.chip-purple{color:var(--purple-dark);border-color:var(--purple)}
+.link-btn{display:inline-flex;align-items:center;gap:0.4rem;background:var(--white);border:2px solid var(--sky);color:var(--sky-dark);border-radius:50px;padding:0.45rem 1rem;font-size:0.83rem;font-weight:800;text-decoration:none;margin:0.25rem 0.25rem 0.25rem 0;transition:all 0.15s;box-shadow:0 2px 6px rgba(14,165,233,0.15)}
+.link-btn:active{transform:scale(0.96)}
+.link-btn.green{border-color:var(--green);color:var(--green-dark)}.link-btn.sun{border-color:var(--sun);color:var(--sun-dark)}.link-btn.coral{border-color:var(--coral);color:var(--coral-dark)}.link-btn.big{font-size:1rem;padding:0.7rem 1.4rem;display:flex;justify-content:center;text-align:center;border-width:3px}
+.video-embed{border-radius:var(--r);overflow:hidden;margin-bottom:0.7rem;background:#000;aspect-ratio:16/9}
+.video-embed iframe{width:100%;height:100%;border:none;display:block}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);margin-bottom:0.7rem;box-shadow:0 2px 10px rgba(0,0,0,0.07)}
+table{width:100%;border-collapse:collapse;font-size:0.78rem;background:var(--white);min-width:340px}
+thead th{background:var(--sky-dark);color:white;padding:0.5rem 0.55rem;text-align:left;font-weight:800;font-size:0.72rem}
+tbody td{padding:0.42rem 0.55rem;border-bottom:1px solid #f1f5f9;color:var(--text-mid)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.hl td{background:#fef9c3;font-weight:700}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody td strong{color:var(--text-dark);font-weight:800}
+.story-card{background:linear-gradient(135deg,#fdf4ff,#fae8ff);border:2px solid var(--purple);border-radius:var(--r);padding:1rem;margin-bottom:0.7rem;font-size:0.88rem;line-height:1.7}
+.story-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;color:var(--purple-dark);margin-bottom:0.5rem}
+.story-card p{margin-bottom:0.55rem;color:var(--text-mid)}
+.story-card p:last-child{margin-bottom:0}
+.big-stat{text-align:center;margin-bottom:0.7rem}
+.stat-number{font-family:'Fraunces',serif;font-size:clamp(2.5rem,10vw,4rem);font-weight:900;line-height:1;background:linear-gradient(135deg,var(--sky-dark),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:0.82rem;font-weight:700;color:var(--text-light);margin-top:0.2rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;margin-bottom:0.7rem}
+.col-card{background:var(--white);border-radius:var(--r);padding:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:1.5px solid rgba(0,0,0,0.06)}
+.col-card .col-icon{font-size:1.4rem;display:block;margin-bottom:0.25rem}
+.col-card .col-title{font-size:0.75rem;font-weight:800;color:var(--text-dark);margin-bottom:0.15rem}
+.col-card .col-body{font-size:0.73rem;color:var(--text-light);line-height:1.5}
+.toggle-group{display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.7rem}
+.toggle-item{background:var(--white);border-radius:12px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.08);box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.toggle-header{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1rem;cursor:pointer;font-weight:800;font-size:0.88rem;user-select:none}
+.toggle-header .ti{flex-shrink:0;font-size:1.05rem;margin-right:0.5rem}
+.toggle-arrow{transition:transform 0.3s;flex-shrink:0;color:var(--text-light)}
+.toggle-header.open .toggle-arrow{transform:rotate(180deg)}
+.toggle-body{max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(.4,0,.2,1);padding:0 1rem;font-size:0.86rem;line-height:1.65;color:var(--text-mid)}
+.toggle-body.open{max-height:400px;padding:0 1rem 0.75rem}
+.toggle-body strong{color:var(--text-dark);font-weight:800}
+.ghg-cards{display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.7rem}
+.ghg-card{background:var(--white);border-radius:12px;padding:0.65rem 1rem;display:flex;align-items:flex-start;gap:0.55rem;cursor:pointer;border:2px solid rgba(0,0,0,0.07);box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:all 0.2s}
+.ghg-card:active{transform:scale(0.98)}
+.ghg-card.revealed{border-color:var(--sky);background:#f0f9ff;cursor:default}
+.ghg-mol{font-size:1.25rem;flex-shrink:0;margin-top:0.1rem}
+.ghg-name{font-weight:800;font-size:0.86rem;color:var(--text-dark)}
+.ghg-detail{font-size:0.78rem;color:var(--text-light);margin-top:0.15rem;display:none}
+.ghg-card.revealed .ghg-detail{display:block;color:var(--sky-dark);font-weight:700}
+.ghg-tap{font-size:0.72rem;color:var(--text-light);font-style:italic;margin-bottom:0.4rem}
+.compare-wrap{position:relative;border-radius:var(--r);overflow:hidden;margin-bottom:0.7rem;height:160px;background:#f1f5f9;user-select:none}
+.compare-a,.compare-b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:1rem;text-align:center}
+.compare-a{background:linear-gradient(135deg,#bae6fd,#7dd3fc);left:0;width:50%;border-right:3px solid white}
+.compare-b{background:linear-gradient(135deg,#fde68a,#fca5a5);right:0;width:50%;left:auto}
+.compare-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;opacity:0.7}
+.compare-val{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;color:var(--text-dark)}
+.compare-desc{font-size:0.76rem;font-weight:700;color:var(--text-mid);margin-top:0.2rem}
+.part-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:2rem 1.5rem;gap:0.75rem}
+.part-number{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.15em;font-weight:800;opacity:0.6}
+.part-big-emoji{font-size:5rem;display:block}
+.part-title{font-family:'Fraunces',serif;font-size:clamp(1.6rem,6vw,2.5rem);font-weight:900;line-height:1.15;color:var(--text-dark)}
+.part-desc{font-size:0.88rem;color:var(--text-mid);font-weight:600;max-width:280px}
+.bg-sky{background:linear-gradient(160deg,#e0f2fe 0%,#bae6fd 100%)}
+.bg-sun{background:linear-gradient(160deg,#fef9c3 0%,#fde68a 100%)}
+.bg-green{background:linear-gradient(160deg,#dcfce7 0%,#bbf7d0 100%)}
+.bg-coral{background:linear-gradient(160deg,#fff1f2 0%,#fecdd3 100%)}
+.bg-purple{background:linear-gradient(160deg,#faf5ff 0%,#ede9fe 100%)}
+.bg-white{background:#f8fafc}
+.bg-orange{background:linear-gradient(160deg,#fff7ed 0%,#fed7aa 100%)}
+.part-sky{background:linear-gradient(135deg,#dbeafe,#bfdbfe)}
+.part-green{background:linear-gradient(135deg,#dcfce7,#a7f3d0)}
+.part-coral{background:linear-gradient(135deg,#fff1f2,#fecdd3)}
+.cover-slide{background:linear-gradient(145deg,#0ea5e9,#6366f1,#ec4899);color:white}
+.cover-slide .slide-body{color:rgba(255,255,255,0.85)}
+.cover-slide .slide-title{color:white}
+.cover-slide .slide-subtitle{color:rgba(255,255,255,0.8)}
+.cover-bigq{background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);border-radius:var(--r);padding:1rem;margin-bottom:0.75rem;backdrop-filter:blur(8px)}
+.cover-bigq .ql{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:0.3rem}
+.cover-bigq p{color:white;font-size:0.9rem;font-weight:600}
+/* Definition box — consistent across all slides */
+.defn-bar{background:rgba(255,255,255,0.85);border-top:2px solid #e2e8f0;padding:0.5rem 1.25rem 0.4rem;flex-shrink:0;font-size:0.72rem;line-height:1.5;margin-left:-1.25rem;margin-right:-1.25rem;}
+.defn-bar strong{color:var(--text-dark);font-weight:800}
+.defn-bar em{font-style:normal;color:var(--sky-dark);font-weight:700}
+/* Curriculum badge */
+.curr-badge{display:inline-flex;align-items:center;gap:0.3rem;background:#dcfce7;border:1.5px solid var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.7rem;font-weight:800;color:var(--green-dark);margin-bottom:0.6rem}
+.enrich-badge{display:inline-flex;align-items:center;gap:0.3rem;background:#f0f9ff;border:1.5px solid var(--sky);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.7rem;font-weight:800;color:var(--sky-dark);margin-bottom:0.6rem}
+/* Temp bars */
+.temp-bar-wrap{margin-bottom:0.7rem}
+.temp-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.55rem}
+.temp-label{font-size:0.76rem;font-weight:700;color:var(--text-mid);width:120px;flex-shrink:0}
+.temp-bar-bg{flex:1;height:26px;background:#e2e8f0;border-radius:50px;overflow:hidden}
+.temp-bar{height:100%;border-radius:50px;display:flex;align-items:center;padding-left:0.5rem;font-size:0.75rem;font-weight:800;color:white;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+</style>
+</head>
+<body>
+<div id="progress-wrap"><div id="progress-fill"></div></div>
+<div id="topbar">
+  <span id="slide-counter">1 / 1</span>
+  <span id="part-label" class="part-label"></span>
+</div>
+<div id="slide-viewport">
+
+<!-- SLIDE 0: COVER -->
+<div class="slide cover-slide" id="s0" data-part="🌍 Welcome">
+  <div class="slide-hero">
+    <span class="hero-emoji">🌍</span>
+    <h1 class="slide-title">Earth &amp; Climate</h1>
+    <p class="slide-subtitle">Wednesday 29 April 2026</p>
+  </div>
+  <div class="cover-bigq">
+    <div class="ql">📋 Contents</div>
+    <p>Earth in Space — days, years, seasons, tides, and the Moon<br>Global Climate — the greenhouse effect, greenhouse gases, and the story of Eunice Foote</p>
+  </div>
+  <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;text-align:center;margin-top:auto;line-height:1.5;padding:0 1rem">Created with Claude Sonnet 4.5 · <a href="#" onclick="goToSlide(19)" style="color:rgba(255,255,255,0.8);text-decoration:underline">About this material →</a></p>
+</div>
+<div class="slide part-sky" id="s1" data-part="Part 1">
+  <div class="part-cover">
+    <div class="part-number">Part 1 of 2</div>
+    <span class="part-big-emoji">🌞</span>
+    <h2 class="part-title">Earth in Space</h2>
+    <p class="part-desc">Why do we have days, years, seasons, and tides? Let's find out!</p>
+    <div class="fact-row" style="justify-content:center">
+      <div class="fact-chip chip-sky">🌞 50 of our moons would fit inside the Earth!</div>
+      <div class="fact-chip chip-sun">🌕 1.3 million Earths would fit inside our sun!</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: WHY IS A YEAR 365 DAYS? -->
+<div class="slide bg-sky" id="s2" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">☀️</span>
+    <h2 class="slide-title">Why is a year 365 days long?</h2>
+  </div>
+
+  <p class="slide-body">Earth travels all the way around the Sun once every <strong>365.25 days</strong>. We call this one <strong>solar year</strong>.</p>
+  <p class="slide-body">Because 0.25 of a day adds up over time, every calendar needs a way to stay in sync with the seasons. In the <strong>Gregorian calendar</strong> (used internationally), the year begins on <strong>1 January</strong>, and a leap day is added on <strong>February 29</strong> every 4 years. In the <strong>Solar Hijri calendar</strong>, the year begins on <strong>Nowruz — 1 Hamal</strong> (around 20–21 March), and leap years follow a 33-year cycle with a day added to the last month. In Dari, a leap year is called <strong>Kabise</strong>. Both solutions work for the same astronomical reason — the orbit takes 365.25 days.</p>
+  <div class="card card-sky">
+    <div class="card-title sky">📅 Two calendars, same Sun</div>
+    <p style="font-size:0.86rem;color:var(--text-mid)">Today in the Gregorian calendar is <strong>29 April 2026</strong>. In the Solar Hijri calendar, today is <strong>9 Sawr (Taurus) 1405</strong>. The new Solar Hijri year 1405 began on Nowruz — 20 March 2026. The Solar Hijri calendar is the official civil calendar of <strong>Iran and Afghanistan</strong>, and Nowruz is celebrated by an estimated <strong>300 million people</strong> across a wide region: including Azerbaijan, India, Iraq, Kazakhstan, Kyrgyzstan, Pakistan, Tajikistan, Turkey, Turkmenistan, Uzbekistan, and Iranian diaspora communities around the world.</p>
+  </div>
+  <div class="fact-row">
+    <div class="fact-chip chip-sky">📏 The Sun is 150 million km from Earth</div>
+    <div class="fact-chip chip-sun">⚡ Earth travels around the Sun at 107,000 km/h</div>
+    <div class="fact-chip chip-coral">💡 Light takes 8.3 minutes to travel from the Sun's surface to Earth</div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>orbit</strong> <em>(OR-bit)</em> — the curved path one object takes around another in space &nbsp;|&nbsp;
+    <strong>solar year</strong> <em>(SOH-lar year)</em> — the time it takes Earth to go all the way around the Sun once &nbsp;|&nbsp;
+    <strong>Kabise</strong> <em>(kah-BEE-seh)</em> — the Dari word for a leap year; a year with an extra day added to keep the calendar in sync with the seasons
+  </div>
+</div>
+
+<!-- SLIDE 3: WHY IS A DAY 24 HOURS? -->
+<div class="slide bg-sun" id="s3" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🌎</span>
+    <h2 class="slide-title">Why is a day 24 hours?</h2>
+  </div>
+
+  <p class="slide-body">A day is the time for Earth to complete one full <strong>spin on its axis</strong>. Earth spins from west to east — this is why the Sun rises in the east and sets in the west. If you could look down at the North Pole from space, you would see Earth spinning <strong>anti-clockwise</strong> (the opposite direction to a clock).</p>
+  <div class="card card-sun">
+    <div class="card-title sun">🤔 Interesting point</div>
+    <p style="font-size:0.88rem;color:var(--text-mid)">One true full spin actually takes <strong>23 hours and 56 minutes</strong>. But we use 24 hours because Earth is also moving along its orbit at the same time. By the time Earth has finished spinning, it has moved a little bit around the Sun — so it needs to spin just a tiny bit <em>more</em> to bring the Sun back to the same place in the sky.</p>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>axis</strong> <em>(AK-sis)</em> — an imaginary line through the middle of Earth from the North Pole to the South Pole, around which Earth spins &nbsp;|&nbsp;
+    <strong>anti-clockwise</strong> <em>(an-tee-KLOK-wyz)</em> — turning in the opposite direction to the hands of a clock
+  </div>
+</div>
+
+<!-- SLIDE 4: WHY DO SEASONS CHANGE? -->
+<div class="slide bg-green" id="s4" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🍂</span>
+    <h2 class="slide-title">Why do seasons change?</h2>
+  </div>
+
+  <div class="card card-green">
+    <div class="card-title green">🌍 Why seasons happen</div>
+    <p style="font-size:0.88rem;color:var(--text-mid)">Seasons happen because Earth is <strong>tilted on its axis by 23.5°</strong>. This tilt stays pointing the same direction as Earth moves around the Sun — so sometimes the Northern Hemisphere leans <em>toward</em> the Sun (summer), and sometimes <em>away</em> from it (winter).</p>
+  </div>
+  <a class="link-btn big" href="https://www.youtube.com/watch?v=WgHmqv_-UbQ" target="_blank">▶️ Watch: Why Do We Have Seasons? (YouTube · 3 min)</a>
+</div>
+  <div class="defn-bar">
+    <strong>hemisphere</strong> <em>(HEM-is-feer)</em> — half of the Earth; the Northern Hemisphere is the top half, the Southern Hemisphere is the bottom half &nbsp;|&nbsp;
+    <strong>tilted</strong> <em>(TIL-ted)</em> — leaning to one side, not perfectly straight up
+  </div>
+</div>
+
+<!-- SLIDE 5: SEASONS DETAILS -->
+<div class="slide bg-green" id="s5" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+
+  <p class="slide-body" style="margin-bottom:0.6rem">The tilt changes two things at the same time. Tap each one to learn more:</p>
+  <div class="toggle-group">
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🌞</span>June, July, August — Summer in the North <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">The north pole tilts <strong>toward</strong> the Sun. Sunlight hits the ground more directly (imagine shining a torch straight down — it makes a small, bright spot). Days are longer. In Kabul, temperatures can go above <strong>35–45°C</strong>.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🍂</span>September, October, November — Autumn in the North <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">The tilt is moving away from the Sun. Days are getting shorter and temperatures are falling.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">❄️</span>December, January, February — Winter in the North <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">The north pole tilts <strong>away</strong> from the Sun. Sunlight hits the ground at a low angle and spreads over a large area (like shining the torch at a slope — the light spreads out and is weaker). Days are shorter. Kabul can drop to <strong>−15°C</strong>.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🌱</span>March, April, May — Spring in the North <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">The tilt is moving back toward the Sun. Days are getting longer and warmer. In Afghanistan — snowmelt feeds the rivers and the growing season begins. Nowruz (1 Hamal) falls on the spring equinox, at the very start of this season, around 20–21 March.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🔄</span>Opposite hemispheres, opposite seasons <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">When Kabul has summer, Melbourne in Australia has winter — at exactly the same moment. The same tilt causes both. Nothing is different about the Sun; only your position relative to it changes.</div>
+    </div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>equinox</strong> <em>(EE-kwi-noks)</em> — a day when every place on Earth gets ~12 hours of daylight; in the Solar Hijri calendar: 1 Hamal (spring) and 1 Mizan (autumn) &nbsp;|&nbsp;
+    <strong>solstice</strong> <em>(SOL-stis)</em> — the day with the most (summer, mid-Saratan) or least (winter, mid-Jaddi) daylight of the year
+  </div>
+</div>
+
+<!-- SLIDE 6: CALGARY VS ISLAMABAD TABLE -->
+<div class="slide bg-sky" id="s6" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">⏱️</span>
+    <h2 class="slide-title">Calgary vs. Islamabad</h2>
+  </div>
+  <p class="slide-body">Both cities are in the Northern Hemisphere — but <strong>Calgary (51°N)</strong> is much further from the equator than <strong>Islamabad (33.7°N)</strong>, so its seasons are much more extreme.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>CGY ↑</th><th>CGY ↓</th><th>CGY ☀️</th><th>ISB ↑</th><th>ISB ↓</th><th>ISB ☀️</th></tr>
+      </thead>
+      <tbody>
+        <tr class="hl"><td>⭐ Apr 29 Today</td><td>6:14am</td><td>8:58pm</td><td>14h 44m</td><td>5:22am</td><td>6:37pm</td><td>13h 15m</td></tr>
+        <tr><td>Jun 21 — Solstice</td><td>5:23am</td><td>9:56pm</td><td>16h 33m</td><td>4:59am</td><td>7:22pm</td><td>14h 23m</td></tr>
+        <tr><td>Sep 22 — Equinox</td><td>7:10am</td><td>7:22pm</td><td>12h 12m</td><td>6:08am</td><td>6:18pm</td><td>12h 10m</td></tr>
+        <tr><td>Dec 21 — Solstice</td><td>8:37am</td><td>4:32pm</td><td>7h 54m</td><td>7:12am</td><td>5:06pm</td><td>9h 54m</td></tr>
+        <tr><td>Mar 20 — Equinox</td><td>7:44am</td><td>7:57pm</td><td>12h 13m</td><td>6:12am</td><td>6:24pm</td><td>12h 12m</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="slide-body" style="font-size:0.8rem">CGY = Calgary &nbsp;|&nbsp; ISB = Islamabad &nbsp;|&nbsp; ↑ = sunrise &nbsp;|&nbsp; ↓ = sunset &nbsp;|&nbsp; ☀️ = total daylight hours and minutes</p>
+  <p class="slide-body" style="font-size:0.8rem">At the <strong>equinoxes</strong>, both cities get nearly the same daylight — about 12 hours each — no matter how far from the equator they are.</p>
+</div>
+  <div class="defn-bar">
+    <strong>equinox</strong> <em>(EE-kwi-noks)</em> — a day when every place on Earth gets ~12 hours of daylight &nbsp;|&nbsp;
+    <strong>solstice</strong> <em>(SOL-stis)</em> — the day with the most (summer) or least (winter) daylight of the year
+  </div>
+</div>
+
+<!-- SLIDE 7: MOON PHASES -->
+<div class="slide bg-purple" id="s7" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🌕</span>
+    <h2 class="slide-title">Why does the Moon seem to change shape?</h2>
+  </div>
+
+  <p class="slide-body">The Moon does not make its own light. We only see the part of the Moon that the <strong>Sun is shining on</strong>. As the Moon travels around Earth over about <strong>29.5 days</strong>, we see more or less of its lit side. The shape does not really change — only the part we can see changes.</p>
+  <div class="ghg-cards">
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🌑</span><div><div class="ghg-name">New Moon — tap to learn</div><div class="ghg-detail">The Moon is between Earth and the Sun. We see only its dark side — it looks invisible in the sky.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🌓</span><div><div class="ghg-name">First Quarter — tap to learn</div><div class="ghg-detail">We can see the right half of the Moon lit up. It has completed one quarter of its journey around Earth.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🌕</span><div><div class="ghg-name">Full Moon — tap to learn</div><div class="ghg-detail">Earth is between the Moon and the Sun — so the Sun's light shines past Earth and lights up the whole face of the Moon that we can see. You might think: "Doesn't Earth's shadow fall on the Moon then?" Usually no — the Moon's orbit is slightly tilted, so it passes above or below Earth's shadow most of the time. When it does pass through the shadow, that is a special event called a lunar eclipse, which only happens a few times a year.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🌗</span><div><div class="ghg-name">Third Quarter — tap to learn</div><div class="ghg-detail">We can see the left half lit. Almost back to New Moon again.</div></div></div>
+  </div>
+  <a class="link-btn" href="https://science.nasa.gov/moon/moon-phases/" target="_blank">🌕 More about Moon phases — NASA →</a>
+</div>
+  <div class="defn-bar">
+    <strong>lunar</strong> <em>(LOO-nar)</em> — related to the Moon &nbsp;|&nbsp;
+    <strong>phase</strong> <em>(fayz)</em> — one stage in a repeating cycle; the Moon goes through its phases (new → full → new) every 29.5 days
+  </div>
+</div>
+
+<!-- SLIDE 8: TIDES -->
+<div class="slide bg-sky" id="s8" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🌊</span>
+    <h2 class="slide-title">How do tides work?</h2>
+  </div>
+
+  <p class="slide-body">A <strong>tide</strong> is the slow rise and fall of the ocean's water level. If you stand on a beach and watch for several hours, the water comes in and covers the sand (high tide), then goes out and uncovers it again (low tide). This happens roughly twice a day.</p>
+  <p class="slide-body">Tides are caused by the Moon's <strong>gravity</strong> pulling on Earth's water. The pull is stronger on the side of Earth closest to the Moon, which creates a bulge of water there.</p>
+  <p class="slide-body">There is also a bulge on the <em>opposite</em> side of Earth. Why? Because the Moon's gravity pulls the whole Earth slightly toward it — the water on the far side gets "left behind," forming a second bulge. The result: as Earth rotates, each coast passes through these two bulges roughly twice each day, giving two high tides and two low tides.</p>
+  <a class="link-btn big" href="https://www.youtube.com/shorts/hKBCdLYcIbk" target="_blank">▶️ Watch: How Do Tides Work? (YouTube)</a>
+</div>
+  <div class="defn-bar">
+    <strong>tide</strong> <em>(tyd)</em> — the regular rise and fall of the ocean caused by the Moon's gravity &nbsp;|&nbsp;
+    <strong>gravity</strong> <em>(GRAV-i-tee)</em> — an invisible force that pulls objects toward each other; the bigger the object, the stronger its gravity
+  </div>
+</div>
+
+<!-- SLIDE 9: TIDAL FRICTION -->
+<div class="slide bg-purple" id="s9" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🐌</span>
+    <h2 class="slide-title">Earth is slowly slowing down!</h2>
+  </div>
+
+  <p class="slide-body">Every day, the ocean water moves back and forth with the tides. As it does, it rubs (creates <strong>friction</strong>) against the seafloor and coastlines. This friction acts like a very, very gentle brake on Earth's spin — so slowly that a single human lifetime makes no measurable difference, but over billions of years it adds up.</p>
+  <div class="fact-row">
+    <div class="fact-chip chip-purple">🌍 1.4 billion years ago: an 18-hour day</div>
+    <div class="fact-chip chip-purple">📅 620 million years ago: a 22-hour day</div>
+    <div class="fact-chip chip-purple">⏰ Today: 24 hours</div>
+    <div class="fact-chip chip-purple">🔭 ~3 billion years in the future: ~47-hour day</div>
+  </div>
+  <div class="card card-purple">
+    <div class="card-title purple">🌙 Where does the lost energy go?</div>
+    <p style="font-size:0.86rem;color:var(--text-mid)">When Earth loses spin energy to friction, that energy does not simply disappear — it is transferred to the Moon through gravity, pushing the Moon into a <strong>higher orbit</strong>. A higher orbit means a larger circle, further away from Earth. The Moon is moving away from Earth at about <strong>3.8 cm per year</strong>. We know this very precisely because Apollo astronauts left laser reflectors on the Moon's surface, and scientists on Earth bounce laser beams off them and time the reflection.</p>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>friction</strong> <em>(FRIK-shun)</em> — a force created when two surfaces rub against each other, which slows things down and creates heat &nbsp;|&nbsp;
+    <strong>higher orbit</strong> <em>(HY-er OR-bit)</em> — a path around Earth that is wider and further away; objects in higher orbits travel more slowly and take longer to go around
+  </div>
+</div>
+
+<!-- SLIDE 10: ARTEMIS II -->
+<div class="slide bg-sky" id="s10" data-part="Part 1 · Earth in Space">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🚀</span>
+    <h2 class="slide-title">Artemis II — It just happened!</h2>
+  </div>
+
+  <p class="slide-body">On <strong>April 1, 2026</strong> — just 4 weeks ago — NASA sent four people to fly around the Moon and come back. It was the first time humans had travelled that far from Earth in more than 50 years!</p>
+  <ul class="sl sky">
+    <li>Crew: Reid Wiseman, Victor Glover, Christina Koch (USA) + Jeremy Hansen (Canada 🇨🇦)</li>
+    <li>Farthest point: <strong>~407,000 km from Earth</strong> — further than any human has ever been, breaking the record set in 1970</li>
+    <li>They photographed the far side of the Moon, ancient craters, and a rare solar eclipse seen from space</li>
+    <li>They witnessed an <strong>Earthrise</strong> — the moment when Earth appeared to rise above the edge of the Moon as they flew around it. From the Moon, Earth looks like a beautiful blue-and-white marble floating in the black sky of space. It is one of the most beautiful and moving sights any human has ever seen.</li>
+    <li>Splashed down April 10 · next mission (Artemis III) aims for a Moon <em>landing</em> in 2028</li>
+  </ul>
+  <a class="link-btn" href="https://www.nasa.gov/gallery/lunar-flyby/" target="_blank">📷 See the Moon flyby photos — NASA →</a>
+</div>
+  <div class="defn-bar">
+    <strong>NASA</strong> <em>(NAA-suh)</em> — the US government's space agency, which sends rockets, satellites and astronauts into space &nbsp;|&nbsp;
+    <strong>Earthrise</strong> <em>(ERTH-ryz)</em> — when Earth appears to slowly "rise" above the Moon's horizon, seen by astronauts orbiting the Moon
+  </div>
+</div>
+
+<!-- SLIDE 11: IT'S ALL CONNECTED -->
+<div class="slide bg-green" id="s11" data-part="Part 1 · Earth in Space">
+  <div class="slide-hero">
+    <span class="hero-emoji">🔗</span>
+    <h2 class="slide-title">It's all connected</h2>
+  </div>
+  <p class="slide-body">All of these things — days, years, seasons, and tides — are set by just a few numbers about Earth and the Moon. If any of these numbers were different, life on Earth would be very different:</p>
+  <div class="two-col">
+    <div class="col-card"><span class="col-icon">🌍</span><div class="col-title">Earth's spin speed</div><div class="col-body">~1,670 km/h at the equator → sets how long a day is</div></div>
+    <div class="col-card"><span class="col-icon">📐</span><div class="col-title">Earth's tilt</div><div class="col-body">23.5° → creates the seasons</div></div>
+    <div class="col-card"><span class="col-icon">🌞</span><div class="col-title">Time to orbit the Sun</div><div class="col-body">~365.25 days → sets how long a year is</div></div>
+    <div class="col-card"><span class="col-icon">🌕</span><div class="col-title">Moon's distance</div><div class="col-body">~384,400 km → creates the tides</div></div>
+  </div>
+  <div class="card card-sky">
+    <div class="card-title sky">💡 A surprising fact</div>
+    <p style="font-size:0.86rem;color:var(--text-mid)">Earth's 23.5° tilt is kept stable by the Moon's gravity. Without the Moon, Earth's tilt could change wildly over thousands of years, causing extreme climate changes. We owe our stable, life-friendly climate partly to our large, nearby Moon!</p>
+  </div>
+</div>
+
+<!-- SLIDE 12: PART 2 COVER -->
+<div class="slide part-green" id="s12" data-part="Part 2">
+  <div class="part-cover">
+    <div class="part-number">Part 2 of 2</div>
+    <span class="part-big-emoji">☁️</span>
+    <h2 class="part-title">Global Climate</h2>
+    <p class="part-desc">What is climate? How does the greenhouse effect work?</p>
+  </div>
+</div>
+
+<!-- SLIDE 13: WEATHER VS CLIMATE -->
+<div class="slide bg-sky" id="s13" data-part="Part 2 · Global Climate">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">☁️</span>
+    <h2 class="slide-title">Weather vs. Climate</h2>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card" style="background:#e0f2fe;border-color:var(--sky)">
+      <span class="col-icon">🌧️</span>
+      <div class="col-title" style="color:var(--sky-dark)">Weather</div>
+      <div class="col-body">What the sky is doing right now — today, this week. It changes quickly.</div>
+    </div>
+    <div class="col-card" style="background:#dcfce7;border-color:var(--green)">
+      <span class="col-icon">🌍</span>
+      <div class="col-title" style="color:var(--green-dark)">Climate</div>
+      <div class="col-body">The usual pattern of weather in a place over many, many years — 30 years or more.</div>
+    </div>
+  </div>
+  <div class="card card-sun">
+    <div class="card-title sun">💬 A helpful saying</div>
+    <p style="font-size:1rem;font-style:italic;color:var(--text-dark);text-align:center">"Climate is what you <em>expect</em>;<br>weather is what you <em>get</em>."</p>
+  </div>
+  <ul class="sl sky">
+    <li><strong>Weather example:</strong> "It is raining in Islamabad today."</li>
+    <li><strong>Climate example:</strong> "Pakistan has hot, dry summers and mild winters."</li>
+  </ul>
+</div>
+  <div class="defn-bar">
+    <strong>weather</strong> <em>(WEH-ther)</em> — the conditions outside right now: hot, cold, rainy, sunny, etc. &nbsp;|&nbsp;
+    <strong>climate</strong> <em>(KLY-mit)</em> — the usual, average weather conditions of a place over 30 or more years
+  </div>
+</div>
+
+<!-- SLIDE 14: GREENHOUSE EFFECT INTRO -->
+<div class="slide bg-orange" id="s14" data-part="Part 2 · Global Climate">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🌡️</span>
+    <h2 class="slide-title">The Greenhouse Effect</h2>
+  </div>
+
+  <p class="slide-body">The greenhouse effect is a <strong>natural process</strong> that warms Earth's surface. Without it, Earth would be a frozen world with no life. With it, life is possible.</p>
+  <div class="compare-wrap">
+    <div class="compare-a">
+      <div class="compare-label">Without greenhouse gases</div>
+      <div class="compare-val">−18°C</div>
+      <div class="compare-desc">🧊 Too cold for life</div>
+    </div>
+    <div class="compare-b">
+      <div class="compare-label">With natural greenhouse gases</div>
+      <div class="compare-val">+15°C</div>
+      <div class="compare-desc">🌺 Life can exist!</div>
+    </div>
+  </div>
+  <p class="slide-body" style="text-align:center;font-size:0.88rem">That <strong>33°C difference</strong> comes entirely from natural greenhouse gases. The problem today is that human activity is adding <em>extra</em> greenhouse gases on top.</p>
+</div>
+  <div class="defn-bar">
+    <strong>greenhouse effect</strong> <em>(GREEN-hows ef-EKT)</em> — a natural process where certain gases in the atmosphere trap the Sun's heat and keep Earth warm &nbsp;|&nbsp;
+    <strong>atmosphere</strong> <em>(AT-mos-feer)</em> — the layer of gases (air) that surrounds Earth
+  </div>
+</div>
+
+<!-- SLIDE 15: HOW THE GREENHOUSE EFFECT WORKS -->
+<div class="slide bg-orange" id="s15" data-part="Part 2 · Global Climate">
+<div class="slide-content">
+
+  <h2 class="slide-title" style="margin-bottom:0.6rem">How does it work? 4 steps</h2>
+  <p class="slide-body" style="font-size:0.82rem;margin-bottom:0.5rem">👆 Tap each step to open it</p>
+  <div class="card card-sun" style="margin-bottom:0.5rem;padding:0.6rem 0.9rem">
+    <p style="font-size:0.8rem;color:var(--text-mid)">📺 <strong>Tip for beginners:</strong> Organisations like NASA, NOAA and the BBC make short, simple science videos in easy English. When a science topic is new to you, these are excellent places to start — the science is accurate, and the language is clear. Don't be afraid to search for them!</p>
+  </div>
+  <a class="link-btn big" href="https://www.youtube.com/watch?v=SN5-DnOHQmE" target="_blank">▶️ Watch: The Greenhouse Effect Explained (YouTube)</a>
+  <div class="toggle-group">
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">☀️</span>Step 1 — Sunlight arrives <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">The Sun sends out light and energy. About <strong>30%</strong> of this sunlight bounces back into space off clouds and ice. The other <strong>70%</strong> passes through the atmosphere and is absorbed by the ocean, land, and ground.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🔥</span>Step 2 — The surface gets warm <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">When sunlight is absorbed by the ground or ocean, the surface heats up — just like how a dark road gets very hot on a sunny day. The surface then releases this energy back upward, but now as a different kind of radiation called <strong>infrared radiation</strong>.</div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🌡️</span>Step 3 — Infrared radiation travels upward <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">
+        <p>The warm surface releases <strong>infrared radiation</strong> upward into the atmosphere. Infrared radiation has a longer wavelength than the visible light that came from the Sun — it is invisible to our eyes.</p>
+        <p style="margin-top:0.4rem">Infrared radiation is not technically "heat" itself, but it <em>creates</em> heat when it is absorbed. When infrared waves hit a molecule, they cause that molecule to vibrate. This vibration is what we feel as warmth. This is the same reason your skin feels warm when you sit near a fire — infrared radiation from the fire is absorbed by your skin and causes its molecules to vibrate.</p>
+      </div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-header" onclick="toggleItem(this)"><span class="ti">🪤</span>Step 4 — Greenhouse gases trap it <span class="toggle-arrow">▼</span></div>
+      <div class="toggle-body">Greenhouse gas molecules in the atmosphere absorb this infrared radiation and send some of it <strong>back down toward Earth</strong>. This is like a blanket around Earth that keeps warmth in. Adding more greenhouse gases makes the blanket thicker, trapping more heat.</div>
+    </div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>infrared radiation</strong> <em>(IN-fra-red ray-dee-AY-shun)</em> — a type of energy with a longer wavelength than visible light; invisible to our eyes but felt as warmth when absorbed &nbsp;|&nbsp;
+    <strong>wavelength</strong> <em>(WAYV-length)</em> — the size of a wave of light or energy; different wavelengths of light look like different colours, or may be invisible like infrared
+  </div>
+</div>
+
+<!-- SLIDE 16: WHICH GASES? -->
+<div class="slide bg-white" id="s16" data-part="Part 2 · Global Climate">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">🧪</span>
+    <h2 class="slide-title">Which gases are greenhouse gases?</h2>
+  </div>
+
+  <p class="ghg-tap">👆 Tap each gas to learn more!</p>
+  <div class="ghg-cards">
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">💨</span><div><div class="ghg-name">Carbon dioxide (CO₂)</div><div class="ghg-detail">The most important long-lived greenhouse gas. It builds up in the atmosphere for hundreds of years. Burning fossil fuels releases large amounts of it. The main driver of climate change.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🐄</span><div><div class="ghg-name">Methane (CH₄) — very potent</div><div class="ghg-detail">Very potent — about 80 times more powerful than CO₂ over 20 years, but breaks down in about 12 years. Comes from cattle digestion, landfills, and oil and gas leaks.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">💧</span><div><div class="ghg-name">Water vapour (H₂O) — it's complicated!</div><div class="ghg-detail">Water vapour is actually the most abundant greenhouse gas in our atmosphere, and it is completely natural. Oceans, lakes and rivers naturally put water vapour into the air all the time. However, water vapour cannot build up on its own — it depends on temperature. When CO₂ warms the planet even a little, warmer air holds more water vapour, which traps more heat, which makes the air even warmer, which holds even more vapour. This is called a positive feedback loop — each step makes the next step bigger. CO₂ starts the warming; water vapour amplifies it.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🌾</span><div><div class="ghg-name">Nitrous oxide (N₂O)</div><div class="ghg-detail">About 273 times more potent than CO₂ over 100 years. Released from fertilizers used in farming, soils, and burning fuels.</div></div></div>
+    <div class="ghg-card" onclick="revealGhg(this)"><span class="ghg-mol">🔵</span><div><div class="ghg-name">Nitrogen &amp; Oxygen — NOT greenhouse gases!</div><div class="ghg-detail">These make up 99% of our air but do not trap heat at all. Only gas molecules made of 3 or more atoms can absorb and re-emit infrared radiation.</div></div></div>
+  </div>
+</div>
+  <div class="defn-bar">
+    <strong>potent</strong> <em>(POH-tent)</em> — very powerful, strong in effect even in small amounts &nbsp;|&nbsp;
+    <strong>positive feedback loop</strong> <em>(POZ-i-tiv FEED-bak loop)</em> — when one change causes a second change that makes the first change even bigger, creating a cycle that keeps growing
+  </div>
+</div>
+
+<!-- SLIDE 17: EUNICE FOOTE -->
+<div class="slide bg-purple" id="s17" data-part="Part 2 · Global Climate">
+<div class="slide-content">
+  <div class="slide-hero">
+    <span class="hero-emoji">👩‍🔬</span>
+    <h2 class="slide-title">Eunice Newton Foote</h2>
+    <p class="slide-subtitle">The woman who discovered the greenhouse effect — and was initially forgotten</p>
+  </div>
+  <div class="story-card">
+    <div class="story-label">📖 A short story</div>
+    <p>In <strong>1856</strong>, Eunice Foote did a simple but brilliant experiment. She filled glass tubes with different gases — ordinary air, damp air, and carbon dioxide — and put them in sunlight. She measured how hot each one got.</p>
+    <p>Her finding: the tube filled with <strong>CO₂ got hotter and stayed hot longer</strong> than the others. From this, she worked out that if Earth's ancient atmosphere had contained more CO₂, the planet would have been much warmer. This was the first time anyone showed experimentally what we now call the greenhouse effect.</p>
+    <p>When her paper was read at a science meeting in 1856, it was read aloud <strong>by a male colleague</strong> rather than by Foote herself — this was common for women scientists at the time. The Irish scientist John Tyndall is often given credit for discovering CO₂'s warming effect, because he published his own experiments in <strong>1861</strong> — three years after Foote. It is now believed that Foote's work came first, but because she was a woman in the 1800s, her contribution was overlooked for a long time. Today she is recognised as a pioneer, and her name is in the history books.</p>
+  </div>
+  <a class="link-btn" href="https://www.climate.gov/news-features/features/happy-200th-birthday-eunice-foote-hidden-climate-science-pioneer" target="_blank">📎 Read more — NOAA Climate.gov →</a>
+</div>
+  <div class="defn-bar">
+    <strong>pioneer</strong> <em>(py-uh-NEER)</em> — one of the first people to do or discover something important &nbsp;|&nbsp;
+    <strong>experimental</strong> <em>(ek-SPER-i-MEN-tul)</em> — based on a scientific test (experiment) done with real materials, not just theory
+  </div>
+</div>
+
+
+<!-- SLIDE END: END OF SESSION -->
+<div class="slide" id="s_end" data-part="🌱 See you next time" style="background:linear-gradient(145deg,#0ea5e9,#6366f1,#ec4899)">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:1.5rem;gap:1rem">
+    <span style="font-size:4rem;animation:pop 0.5s cubic-bezier(.34,1.56,.64,1) both">🌍</span>
+    <h2 style="font-family:'Fraunces',serif;font-size:clamp(1.3rem,5vw,1.9rem);font-weight:900;color:white;line-height:1.2">End of Session</h2>
+    <p style="color:rgba(255,255,255,0.9);font-size:0.92rem;font-weight:600;max-width:320px;line-height:1.6">Great work today! In <strong> our next tutoring session </strong> we will look at climate change — where CO₂ comes from, how scientists measure it, and the many reasons for hope.</p>
+    <div style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);border-radius:16px;padding:0.9rem 1.1rem;width:100%;max-width:320px;margin-top:0.5rem">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:0.5rem">📋 Upcoming </div>
+      <p style="color:white;font-size:0.82rem;font-weight:600;line-height:1.6">Sources of CO₂ and methane · The Keeling Curve · 800,000 years of ice cores · Temperature trends · Pakistan's solar revolution · MethaneSAT · + more</p>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT SLIDE (SESSION 1) -->
+<div class="slide bg-white" id="s_about" data-part="📋 About">
+  <div class="slide-hero">
+    <span class="hero-emoji">📋</span>
+    <h2 class="slide-title">About this material</h2>
+  </div>
+  <div class="card card-sky">
+    <div class="card-title sky">📚 Sources</div>
+    <ul class="sl sky" style="margin-top:0.3rem">
+      <li><strong>Textbook:</strong> Grade 10 Science Textbook, CK-12 Foundation / Ontario Virtual School.</li>
+      <li><strong>Ontario Curriculum:</strong> The Ontario Curriculum, Grades 9 and 10: Science (2008, Revised). Ontario Ministry of Education. SNC2D.</li>
+      <li><strong>External sources:</strong> NOAA, NASA, Eurostat, World Resources Institute</li>
+      <li><strong>Current events:</strong> NASA Artemis II mission (April 2026)</li>
+    </ul>
+  </div>
+  <div class="card card-purple">
+    <div class="card-title purple">🤖 How this was made</div>
+    <p style="font-size:0.86rem;color:var(--text-mid);line-height:1.7">Created using <strong>Claude Sonnet 4.5</strong> (Anthropic), working with a human teacher. The teacher provided content, sources, and instructions; Claude drafted the text and interactives; the teacher reviewed and corrected each version. All facts were checked against the primary sources listed above.</p>
+  </div>
+  <div class="card card-sun">
+    <div class="card-title sun">⚠️ A note on AI and accuracy</div>
+    <p style="font-size:0.86rem;color:var(--text-mid);line-height:1.7">AI tools can make mistakes. If you are unsure about any fact, check the source links on each slide. Good science always goes back to the original data.</p>
+  </div>
+</div>
+
+</div><!-- end slide-viewport -->
+
+<div id="bottom-nav">
+  <button class="nav-btn" id="prev-btn" onclick="prevSlide()" disabled>← Back</button>
+  <div id="jump-dots"></div>
+  <button class="nav-btn primary" id="next-btn" onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const TOTAL = slides.length;
+let current = 0;
+const partColors = {
+  '🌍 Welcome':'#0ea5e9','Part 1':'#0ea5e9','Part 1 · Earth in Space':'#0ea5e9',
+  'Part 2':'#10b981','Part 2 · Global Climate':'#10b981',
+  '📋 About':'#64748b','🌱 See you next time':'#8b5cf6'
+};
+function updateUI() {
+  document.getElementById('slide-counter').textContent = `${current+1} / ${TOTAL}`;
+  const part = slides[current].dataset.part || '';
+  const lbl = document.getElementById('part-label');
+  lbl.textContent = part;
+  const color = partColors[part] || '#64748b';
+  lbl.style.background = color+'20'; lbl.style.color = color; lbl.style.border = `1px solid ${color}40`;
+  document.getElementById('progress-fill').style.width = `${((current+1)/TOTAL)*100}%`;
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').textContent = current === TOTAL-1 ? '🎉 Done!' : 'Next →';
+  const dotsEl = document.getElementById('jump-dots');
+  dotsEl.innerHTML = '';
+  slides.forEach((s,i) => {
+    const d = document.createElement('button');
+    d.className = 'jump-dot' + (i===current?' active':'');
+    d.onclick = () => goToSlide(i);
+    dotsEl.appendChild(d);
+  });
+  // no temp bars in session 1
+}
+function goToSlide(n, dir) {
+  if (n<0||n>=TOTAL||n===current) return;
+  const goingForward = (dir===undefined ? n>current : dir>0);
+  const outgoing = slides[current];
+  const incoming = slides[n];
+  incoming.classList.add(goingForward?'pre-enter-right':'pre-enter-left');
+  incoming.getBoundingClientRect();
+  outgoing.classList.add(goingForward?'exit-left':'exit-right');
+  outgoing.classList.remove('active');
+  incoming.classList.remove('pre-enter-right','pre-enter-left');
+  incoming.classList.add('active');
+  incoming.scrollTop = 0;
+  current = n;
+  setTimeout(() => { outgoing.classList.remove('exit-left','exit-right'); }, 280);
+  updateUI();
+}
+function nextSlide() { goToSlide(current+1,1); }
+function prevSlide() { goToSlide(current-1,-1); }
+let touchStartX=0,touchStartY=0;
+document.getElementById('slide-viewport').addEventListener('touchstart',e=>{
+  touchStartX=e.touches[0].clientX; touchStartY=e.touches[0].clientY;
+},{passive:true});
+document.getElementById('slide-viewport').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchStartX;
+  const dy=e.changedTouches[0].clientY-touchStartY;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){dx<0?nextSlide():prevSlide();}
+},{passive:true});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')nextSlide();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevSlide();
+});
+function toggleItem(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  header.closest('.toggle-group').querySelectorAll('.toggle-body').forEach(b=>b.classList.remove('open'));
+  header.closest('.toggle-group').querySelectorAll('.toggle-header').forEach(h=>h.classList.remove('open'));
+  if(!isOpen){body.classList.add('open');header.classList.add('open');}
+}
+function revealGhg(card) { card.classList.toggle('revealed'); }
+function animateTempBars() {
+  document.querySelectorAll('#tempBars .temp-bar').forEach(bar=>{bar.style.width=bar.dataset.w;});
+}
+slides[0].style.opacity='1';
+slides[0].style.transform='translateX(0)';
+slides[0].style.pointerEvents='auto';
+slides[0].classList.add('active');
+updateUI();
+</script>
+</body>
+</html>
