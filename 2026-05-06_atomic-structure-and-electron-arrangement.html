@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrons & Ionization</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── RESET & ROOT ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f5f0e8;
+  --surface:  #fdfaf4;
+  --card:     #ffffff;
+  --ink:      #1a1408;
+  --muted:    #6b6355;
+  --border:   #ddd5c4;
+  --accent:   #c85a1e;       /* warm orange-red */
+  --accent2:  #2a6b8a;       /* teal blue */
+  --accent3:  #5a7a2a;       /* olive green */
+  --accent4:  #7a2a6b;       /* purple */
+  --shell1:   #c85a1e;
+  --shell2:   #2a6b8a;
+  --shell3:   #5a7a2a;
+  --shell4:   #7a2a6b;
+  --gold:     #b8860b;
+  --ribbon:   #1a1408;
+  --ribbon-text: #f5f0e8;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--border);
+  z-index: 200;
+}
+#progress-fill {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── SLIDE SYSTEM ── */
+.slide-page { display: none; }
+.slide-page.active {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: center;        /* centre the inner wrapper */
+  background: var(--bg);
+}
+
+/* Inner wrapper — everything lives inside this, capped at 680px */
+.slide-inner {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,0,0,0.08);
+}
+
+/* ── SLIDE HEADER BAR ── */
+.slide-header {
+  background: var(--ink);
+  color: var(--ribbon-text);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.slide-header .slide-tag { color: var(--gold); }
+
+/* ── SLIDE BODY (scrollable) ── */
+.slide-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 20px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* remove the old per-child max-width rule — the wrapper handles it now */
+.slide-body > * { max-width: none; margin-left: 0; margin-right: 0; }
+
+/* ── TYPOGRAPHY ── */
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 6vw, 46px);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(22px, 5vw, 34px);
+  line-height: 1.15;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+p {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #2c2415;
+  margin-bottom: 14px;
+}
+.subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 24px;
+}
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* ── DECORATIVE RULE ── */
+.rule {
+  width: 48px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 14px 0 20px;
+}
+
+/* ── BIG NUMBER / ICON DISPLAY ── */
+.hero-number {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(64px, 18vw, 120px);
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.15;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.card-accent-left {
+  border-left: 4px solid var(--accent);
+  border-radius: 0 14px 14px 0;
+}
+.card-accent-left.blue  { border-left-color: var(--accent2); }
+.card-accent-left.green { border-left-color: var(--accent3); }
+.card-accent-left.purple{ border-left-color: var(--accent4); }
+.card-accent-left.gold  { border-left-color: var(--gold); }
+
+.card h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.card p { font-size: 16px; margin-bottom: 0; }
+
+/* ── SHELL TABLE ── */
+.shell-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 15px;
+}
+.shell-table thead tr {
+  background: var(--ink);
+  color: var(--ribbon-text);
+}
+.shell-table th {
+  padding: 11px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: left;
+  font-weight: 500;
+}
+.shell-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.shell-table tbody tr:last-child td { border-bottom: none; }
+.shell-table tbody tr:nth-child(odd) { background: var(--surface); }
+.shell-table tbody tr:nth-child(even) { background: var(--card); }
+
+.shell-pip {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+/* ── HIGHLIGHT TEXT ── */
+.hl  { color: var(--accent);  font-weight: 700; }
+.hl2 { color: var(--accent2); font-weight: 700; }
+.hl3 { color: var(--accent3); font-weight: 700; }
+.hl4 { color: var(--accent4); font-weight: 700; }
+.hlg { color: var(--gold);    font-weight: 700; }
+
+/* ── CALL-OUT BOX ── */
+.callout {
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.callout.orange { background: #fef3ec; border: 1px solid #f4c4a0; }
+.callout.blue   { background: #ecf4f8; border: 1px solid #a0c4d4; }
+.callout.green  { background: #f0f5ea; border: 1px solid #b4cc8a; }
+.callout.purple { background: #f5ecf5; border: 1px solid #c4a0c4; }
+.callout.dark   { background: var(--ink); color: var(--ribbon-text); border: none; }
+.callout .callout-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+.callout.dark .callout-label { color: var(--gold); opacity: 1; }
+
+/* ── STEP LIST ── */
+.steps { list-style: none; padding: 0; margin: 14px 0; }
+.steps li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.step-num {
+  background: var(--ink);
+  color: var(--ribbon-text);
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-text { font-size: 16px; line-height: 1.7; }
+
+/* ── INTERACTIVE FILL DEMO ── */
+.fill-demo {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 14px 0;
+}
+.fill-demo h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.element-select {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6355' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.shell-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.shell-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  width: 58px;
+  flex-shrink: 0;
+}
+.e-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.18s ease both;
+}
+@keyframes pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.e-empty {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border);
+  display: inline-block;
+}
+.notation-box {
+  margin-top: 14px;
+  background: var(--ink);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: var(--gold);
+  text-align: center;
+}
+
+/* ── BOHR SVG WRAPPER ── */
+.bohr-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 16px 12px;
+  margin: 14px 0;
+  text-align: center;
+}
+.bohr-caption {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* ── TWO-COLUMN GRID ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+}
+.two-col .card { margin-bottom: 0; }
+@media (max-width: 460px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* ── IMAGE PLACEHOLDER ── */
+.img-slot {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  margin: 14px 0;
+  color: var(--muted);
+}
+.img-slot .img-path {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--accent2);
+  margin-top: 8px;
+  word-break: break-all;
+}
+/* TO USE: replace the .img-slot div with:
+   <img src="images/YOUR-FILE.jpg" alt="description" style="width:100%;border-radius:12px;"> */
+
+/* ── PRACTICE QUESTION ── */
+.practice-q {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 20px;
+  margin: 16px 0;
+}
+.practice-q .q-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.practice-q .q-text {
+  font-size: 17px;
+  line-height: 1.75;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.practice-q .q-diagram {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+/* Image goes here: <img src="images/FILENAME.jpg" alt="..." style="width:100%;border-radius:8px;"> */
+.answer-toggle {
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+.answer-toggle:hover { background: var(--ink); color: var(--ribbon-text); }
+.answer-box {
+  display: none;
+  margin-top: 14px;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.75;
+  border-left: 3px solid var(--accent3);
+}
+.answer-box.open { display: block; }
+
+/* ── GLOSSARY RIBBON ── */
+.glossary-ribbon {
+  background: var(--ribbon);
+  color: var(--ribbon-text);
+  padding: 0;
+  flex-shrink: 0;
+}
+.glossary-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--ribbon-text);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.glossary-toggle .g-arrow {
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+.glossary-toggle.open .g-arrow { transform: rotate(180deg); }
+.glossary-panel {
+  display: none;
+  padding: 0 20px 16px;
+  max-height: 280px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.glossary-panel.open { display: block; }
+.glossary-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.glossary-item:last-child { border-bottom: none; }
+.g-word {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  color: var(--gold);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+.g-phonetic {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  display: block;
+  margin-top: 1px;
+}
+.g-def {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.75);
+}
+
+/* ── NAV BAR ── */
+.nav-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.nav-btn {
+  background: var(--ink);
+  color: var(--ribbon-text);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.nav-btn:not(:disabled):hover { opacity: 0.75; }
+.jump-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.jump-select {
+  width: 72px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+.jump-btn {
+  background: var(--accent2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+.jump-btn:hover { opacity: 0.85; }
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.nav-indicator {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+.nav-indicator .nav-title {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* ── SECTION DIVIDER SLIDE ── */
+.section-hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px 20px 32px;
+  background: var(--ink);
+  color: var(--ribbon-text);
+  position: relative;
+  overflow: hidden;
+}
+.section-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(184,134,11,0.18) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(200,90,30,0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+.section-hero .big-letter {
+  position: absolute;
+  top: -20px;
+  right: -10px;
+  font-family: 'DM Serif Display', serif;
+  font-size: min(52vw, 320px);
+  color: rgba(255,255,255,0.03);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.section-hero h1 { color: var(--ribbon-text); font-size: clamp(32px, 8vw, 52px); }
+.section-hero .subtitle { color: rgba(255,255,255,0.55); margin-bottom: 0; }
+.section-hero .section-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+/* ── COMPARE TABLE ── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+}
+.compare-col {
+  border-radius: 12px;
+  padding: 16px;
+}
+.compare-col.metal    { background: #fef3ec; border: 1.5px solid #f4c4a0; }
+.compare-col.nonmetal { background: #ecf4f8; border: 1.5px solid #a0c4d4; }
+.compare-col h4 {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.compare-col.metal    h4 { color: var(--accent); }
+.compare-col.nonmetal h4 { color: var(--accent2); }
+.compare-col p { font-size: 14px; margin-bottom: 0; line-height: 1.65; }
+@media (max-width: 400px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
+
+/* ── ARROW INDICATOR ── */
+.arrow-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 15px;
+}
+.arrow-row .arrow { font-size: 20px; color: var(--accent); }
+
+/* ── PERIOD/GROUP VISUAL ── */
+.pt-visual {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  margin: 14px 0;
+  max-width: 380px;
+}
+.pt-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  transition: transform 0.15s;
+  cursor: default;
+}
+.pt-cell.filled { background: var(--ink); color: var(--ribbon-text); border-color: var(--ink); }
+.pt-cell.accent { background: var(--accent); color: white; border-color: var(--accent); }
+.pt-cell.accent2 { background: var(--accent2); color: white; border-color: var(--accent2); }
+.pt-cell.accent3 { background: var(--accent3); color: white; border-color: var(--accent3); }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 0 — Title Slide
+════════════════════════════════════════════ -->
+<div class="slide-page active" id="slide-0">
+  <div class="slide-inner">
+  <div class="slide-body" style="padding:0; display:flex; flex-direction:column; justify-content:space-between; min-height:100vh;">
+
+    <!-- Top dark hero -->
+    <div style="background:var(--ink); flex:1; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:48px 28px 40px; position:relative; overflow:hidden;">
+      <!-- decorative glow -->
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 90% 10%, rgba(184,134,11,0.22) 0%, transparent 55%), radial-gradient(ellipse at 10% 90%, rgba(200,90,30,0.14) 0%, transparent 50%);pointer-events:none;"></div>
+      <!-- big decorative letter -->
+      <div style="position:absolute;right:-10px;top:-20px;font-family:'DM Serif Display',serif;font-size:min(55vw,340px);color:rgba(255,255,255,0.03);line-height:1;pointer-events:none;user-select:none;">⚛</div>
+      <h1 style="color:var(--ribbon-text);font-size:clamp(34px,8vw,58px);line-height:1.05;margin-bottom:14px;">Atomic Structure<br>&amp; Electron<br>Arrangement</h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:16px;font-style:italic;margin-bottom:0;">From shells to ions — understanding how atoms are built and why they react.</p>
+    </div>
+
+    <!-- Contents section -->
+    <div style="background:var(--surface);padding:28px 28px 12px;border-top:3px solid var(--gold);">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);margin-bottom:18px;">📋 What's covered</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:10px;padding:13px 16px;border:1px solid var(--border);">
+          <span style="font-size:22px;">🐚</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);">Electron Shell Filling</div>
+            <div style="font-size:13px;color:var(--muted);">How electrons arrange around the nucleus</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:10px;padding:13px 16px;border:1px solid var(--border);">
+          <span style="font-size:22px;">⚛️</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);">Valence Electrons &amp; the Periodic Table</div>
+            <div style="font-size:13px;color:var(--muted);">Periods, groups and what they tell us</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:10px;padding:13px 16px;border:1px solid var(--border);">
+          <span style="font-size:22px;">⚡</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);">Ionisation</div>
+            <div style="font-size:13px;color:var(--muted);">Why atoms gain or lose electrons · cations, anions · metals vs non-metals</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:10px;padding:13px 16px;border:1px solid var(--border);">
+          <span style="font-size:22px;">🏆</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);">Test Yourself</div>
+            <div style="font-size:13px;color:var(--muted);">Questions · easy recall → worked calculations · answers hidden until you're ready</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav bar -->
+    <div class="nav-bar" style="border-top:1px solid var(--border);">
+      <button class="nav-btn" disabled>← Back</button>
+      <div class="nav-indicator">Start<span class="nav-title">Tap Next to begin</span></div>
+      <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+    </div>
+
+  </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 1 — Section Hero: Shell Filling
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-1">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1</span>
+    <span>Electron Shell Filling</span>
+    <span>1 / 15</span>
+  </div>
+
+  <div class="slide-body" style="padding:0;">
+    <div class="section-hero" style="min-height:38vh;">
+      <div class="big-letter">e⁻</div>
+      <div class="section-num">⚛️ Section 01 — Foundation</div>
+      <h1>Electron Shells</h1>
+      <p class="subtitle">How electrons arrange themselves around the nucleus.</p>
+    </div>
+    <div style="padding: 28px 20px 20px;">
+
+      <h3 style="margin-top:20px;">🏗️ What is a model?</h3>
+      <p>No one has ever seen an atom directly — they are far too small. So scientists build <strong>models</strong>: simplified descriptions that explain what we observe in experiments. A model is not a perfect picture of reality. It is the <em>best explanation we have so far</em>.</p>
+
+      <div class="callout blue">
+        <div class="callout-label">🔬 How models improve over time</div>
+        As scientists do new experiments, they gather new evidence. If the evidence fits the current model, the model is kept. If the evidence contradicts it, the model is <strong>updated or replaced</strong>. This is how science works.
+      </div>
+
+      <p>The atomic model has changed several times. Each version was the best explanation available at the time:</p>
+
+      <div class="card card-accent-left" style="margin-bottom:8px;">
+        <h4>🍮 Thomson (1897) — "Plum pudding"</h4>
+        <p>Electrons embedded in a cloud of positive charge — like raisins in a pudding. Proposed after the electron was discovered.</p>
+      </div>
+      <div class="card card-accent-left blue" style="margin-bottom:8px;">
+        <h4>🥇 Rutherford (1911) — Nuclear model</h4>
+        <p>Gold foil experiment showed most of the atom is empty space, with a tiny dense <strong>nucleus</strong> at the centre. Electrons orbit the outside.</p>
+      </div>
+      <div class="card card-accent-left green" style="margin-bottom:8px;">
+        <h4>🔵 Bohr (1913) — Shell model</h4>
+        <p>Electrons orbit in <strong>fixed shells</strong> at specific distances. Each shell holds a set number of electrons. <em>This is the model we use in this course.</em></p>
+      </div>
+
+      <div class="callout dark">
+        <div class="callout-label">📌 Worth remembering</div>
+        The shell model is a simplification. It is very useful for understanding chemical behaviour, but later scientists discovered that electrons do not actually travel in neat circular paths. The shell model is our best simple tool — not the final word.
+      </div>
+
+      <div class="callout purple" style="margin-top:6px;">
+        <div class="callout-label">🍇 Mind-blowing fact — most of the atom is empty space</div>
+        Rutherford's experiment showed that atoms are almost entirely empty space, with a tiny, dense nucleus at the centre. If an atom were the size of a football field, the nucleus would be like a grape in the middle, and everything else would be empty. We don’t fall through objects because the electrons on the outside of atoms repel each other, creating the feeling of solidity.      </div>
+
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-1">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-1')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Model</span><span class="g-phonetic">MOD-ul</span></div>
+        <div class="g-def">A simplified explanation of something we cannot see directly. Scientists update models when new evidence appears.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Evidence</span><span class="g-phonetic">EV-ih-dense</span></div>
+        <div class="g-def">Information from experiments that supports or challenges a scientific idea.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Nucleus</span><span class="g-phonetic">NOO-klee-us</span></div>
+        <div class="g-def">The small, dense centre of an atom. Contains protons and neutrons.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Electron</span><span class="g-phonetic">ee-LEK-tron</span></div>
+        <div class="g-def">A tiny negatively charged particle that surrounds the nucleus.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Shell</span><span class="g-phonetic">shel</span></div>
+        <div class="g-def">A layer around the nucleus where electrons can live. Also called an energy level.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Bohr model</span><span class="g-phonetic">BOR MOD-ul</span></div>
+        <div class="g-def">The atomic model where electrons travel in fixed shells at set distances from the nucleus. Named after Niels Bohr (1913).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)" disabled>← Back</button>
+    <div class="nav-indicator">1 / 15<span class="nav-title">Introduction</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 2 — Shell Capacities
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-2">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1</span>
+    <span>Shell Capacities</span>
+    <span>2 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>🪣 How Many Electrons Fit?</h2>
+    <div class="rule"></div>
+    <p>Each shell has a <strong>maximum number of electrons</strong> it can hold. Think of each shell like a row of seats — once every seat is filled, the next person must move to the next row.</p>
+
+    <div class="callout orange">
+      <div class="callout-label">💡 The big idea</div>
+      For elements up to and including atomic number 18, electrons always fill the <strong>innermost shell first</strong>. Only when that shell is full do electrons begin filling the next one. The are more than 4 shells, but that's all we will cover here.
+    </div>
+
+    <table class="shell-table">
+      <thead>
+        <tr>
+          <th>Shell</th>
+          <th>Max electrons</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="shell-pip" style="background:var(--shell1)"></span><strong>Shell 1</strong> (innermost)</td>
+          <td><strong>2</strong></td>
+          <td>Always fills first</td>
+        </tr>
+        <tr>
+          <td><span class="shell-pip" style="background:var(--shell2)"></span><strong>Shell 2</strong></td>
+          <td><strong>8</strong></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="shell-pip" style="background:var(--shell3)"></span><strong>Shell 3</strong></td>
+          <td><strong>8</strong></td>
+          <td>For elements 1–18</td>
+        </tr>
+        <tr>
+          <td><span class="shell-pip" style="background:var(--shell4)"></span><strong>Shell 4</strong></td>
+          <td><strong>18</strong></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="text-align:center;">
+      <img src="images/2026-05-05_oxygen-seashell.png" alt="Oxygen atom diagram" style="width:60%;border-radius:12px;">
+    </div>
+
+  </div> 
+
+  <div class="glossary-ribbon" id="gr-2">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-2')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Capacity</span><span class="g-phonetic">kuh-PAS-ih-tee</span></div>
+        <div class="g-def">The maximum number of electrons a shell can hold.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Innermost</span><span class="g-phonetic">IN-er-most</span></div>
+        <div class="g-def">Closest to the centre (nucleus). Shell 1 is the innermost shell.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">2 / 15<span class="nav-title">Shell Capacities</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 3 — The Filling Rule Step by Step
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-3">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1</span>
+    <span>The Filling Rule</span>
+    <span>3 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>📥 How to Fill the Shells</h2>
+    <div class="rule"></div>
+    <p>Follow these three steps for <em>any</em> element:</p>
+
+    <ul class="steps">
+      <li>
+        <div class="step-num">1</div>
+        <div class="step-text">Find the <strong>atomic number</strong>. For a neutral atom, this equals the number of electrons.</div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div class="step-text">Place electrons into <strong>Shell 1 first</strong> (max 2). Move to Shell 2 when Shell 1 is full, then Shell 3, and so on.</div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div class="step-text">Write the <strong>notation</strong> — the number of electrons in each shell, separated by commas. Example: <span style="font-family:'DM Mono',monospace; color:var(--accent);">2, 8, 1</span></div>
+      </li>
+    </ul>
+
+     <div class="card card-accent-left blue">
+      <h4>✅ Worked Example — Oxygen (O)</h4>
+      <p>Atomic number = 8 → 8 electrons<br>
+      Shell 1: <span class="hl">2</span> → 6 remaining<br>
+      Shell 2: <span class="hl2">6</span><br>
+      <strong>Notation: 2, 6</strong></p>
+    </div>
+
+        <div style="text-align:center;">
+      <img src="images/2026-05-05_oxygen-seashell.png" alt="Oxygen atom diagram" style="width:60%;border-radius:12px;">
+    </div>
+
+    <div class="card card-accent-left">
+      <h4>✅ Worked Example — Sodium (Na)</h4>
+      <p>Atomic number = 11 → 11 electrons<br>
+      Shell 1: <span class="hl">2</span> (full) → 9 remaining<br>
+      Shell 2: <span class="hl2">8</span> (full) → 1 remaining<br>
+      Shell 3: <span class="hl3">1</span><br>
+      <strong>Notation: 2, 8, 1</strong></p>
+    </div>
+
+    <div class="card card-accent-left green">
+      <h4>✅ Worked Example — Chlorine (Cl)</h4>
+      <p>Atomic number = 17 → 17 electrons<br>
+      Shell 1: <span class="hl">2</span> → 15 remaining<br>
+      Shell 2: <span class="hl2">8</span> → 7 remaining<br>
+      Shell 3: <span class="hl3">7</span><br>
+      <strong>Notation: 2, 8, 7</strong></p>
+    </div>
+
+  </div>
+
+  <div class="glossary-ribbon" id="gr-3">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-3')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Atomic number</span><span class="g-phonetic">uh-TOM-ik NUM-ber</span></div>
+        <div class="g-def">The number of protons in the nucleus. Equals the number of electrons in a neutral atom.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Neutral atom</span><span class="g-phonetic">NOO-trul AT-um</span></div>
+        <div class="g-def">An atom with no charge — it has equal numbers of protons and electrons.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Notation</span><span class="g-phonetic">noh-TAY-shun</span></div>
+        <div class="g-def">A shorthand way of writing the electron arrangement, e.g. 2, 8, 1.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">3 / 15<span class="nav-title">The Filling Rule</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 4 — Interactive Demo
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-4">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1</span>
+    <span>Try It Yourself</span>
+    <span>4 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>🎮 Fill the Shells</h2>
+    <div class="rule"></div>
+    <p>Choose any element. Watch how the electrons distribute across the shells.</p>
+
+    <div class="fill-demo">
+      <h4>🔬 Interactive Shell Filler</h4>
+      <select class="element-select" id="elemSelect" onchange="fillShells()">
+        <option value="1">Hydrogen (H) — Z = 1</option>
+        <option value="2">Helium (He) — Z = 2</option>
+        <option value="3">Lithium (Li) — Z = 3</option>
+        <option value="4">Beryllium (Be) — Z = 4</option>
+        <option value="5">Boron (B) — Z = 5</option>
+        <option value="6">Carbon (C) — Z = 6</option>
+        <option value="7">Nitrogen (N) — Z = 7</option>
+        <option value="8">Oxygen (O) — Z = 8</option>
+        <option value="9">Fluorine (F) — Z = 9</option>
+        <option value="10">Neon (Ne) — Z = 10</option>
+        <option value="11">Sodium (Na) — Z = 11</option>
+        <option value="12">Magnesium (Mg) — Z = 12</option>
+        <option value="13">Aluminum (Al) — Z = 13</option>
+        <option value="14">Silicon (Si) — Z = 14</option>
+        <option value="15">Phosphorus (P) — Z = 15</option>
+        <option value="16">Sulfur (S) — Z = 16</option>
+        <option value="17">Chlorine (Cl) — Z = 17</option>
+        <option value="18">Argon (Ar) — Z = 18</option>
+      </select>
+      <div id="shellDisplay"></div>
+      <div class="notation-box" id="notationResult">Choose an element above</div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-label">👆 Try this</div>
+      Select Neon (Ne, Z=10). Notice shell 2 is completely full — 8 electrons. Now try Sodium (Na, Z=11). One electron spills into Shell 3. That single electron will matter a lot later.
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-4">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-4')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Element</span><span class="g-phonetic">EL-uh-ment</span></div>
+        <div class="g-def">A pure substance made of only one type of atom, e.g. hydrogen, carbon, gold.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Z</span><span class="g-phonetic">zed</span></div>
+        <div class="g-def">The symbol used for atomic number in science.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">4 / 15<span class="nav-title">Interactive Demo</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 5 — Valence Electrons
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-5">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1</span>
+    <span>Valence Electrons</span>
+    <span>5 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>Valence Electrons</h2>
+    <div class="rule"></div>
+    <p>The electrons in the <strong>outermost shell</strong> are called <span class="hl">valence electrons</span>. They are the only electrons that participate in chemical reactions and bonding. All inner-shell electrons are held tightly and ignored.</p>
+
+    <div class="callout dark">
+      <div class="callout-label">📏 Simple rule</div>
+      The <strong>last number</strong> in the shell notation = the number of valence electrons.<br>
+      Na is <strong>2, 8, 1</strong> → <strong>1</strong> valence electron.<br>
+      Cl is <strong>2, 8, 7</strong> → <strong>7</strong> valence electrons.
+    </div>
+
+    <h3 style="margin-top:20px;">Valence electrons & the Periodic Table</h3>
+    <table class="shell-table">
+      <thead><tr><th>Element</th><th>Notation</th><th>Valence e⁻</th><th>Group</th></tr></thead>
+      <tbody>
+        <tr><td>Li</td><td>2, 1</td><td class="hl">1</td><td>1</td></tr>
+        <tr><td>Na</td><td>2, 8, 1</td><td class="hl">1</td><td>1</td></tr>
+        <tr><td>Mg</td><td>2, 8, 2</td><td class="hl">2</td><td>2</td></tr>
+        <tr><td>O</td><td>2, 6</td><td class="hl">6</td><td>16</td></tr>
+        <tr><td>Cl</td><td>2, 8, 7</td><td class="hl">7</td><td>17</td></tr>
+      </tbody>
+    </table>
+
+    <div class="two-col">
+      <div class="card card-accent-left">
+        <h4>↕️ Period = shells used</h4>
+        <p>Na has 3 shells → Period <strong>3</strong>.<br>Li has 2 shells → Period <strong>2</strong>.</p>
+      </div>
+      <div class="card card-accent-left blue">
+        <h4>↔️ Group = valence e⁻</h4>
+        <p>Cl has 7 valence e⁻ → Group <strong>17</strong>.<br>Na has 1 valence e⁻ → Group <strong>1</strong>.</p>
+      </div>
+    </div>
+
+    <div class="callout green" style="margin-top:6px;">
+      <div class="callout-label">🌐 Explore — Google 3D Periodic Table</div>
+      Open the interactive table below. Click on elements in <strong>different periods</strong> — Period 1, then Period 2, then Period 3 — and look at the 3D model. Notice how each new period adds an extra shell around the nucleus.
+      <br><br>
+      <a href="https://artsexperiments.withgoogle.com/periodic-table/?exp=true&lang=en"
+         target="_blank"
+         style="display:inline-block;margin-top:4px;background:var(--accent3);color:#fff;text-decoration:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.02em;">
+        Open 3D Periodic Table ↗
+      </a>
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-5">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-5')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Valence electrons</span><span class="g-phonetic">VAY-lents ee-LEK-tronz</span></div>
+        <div class="g-def">Electrons in the outermost shell. These are the only ones involved in chemical reactions.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Period</span><span class="g-phonetic">PEER-ee-ud</span></div>
+        <div class="g-def">A horizontal row of the periodic table. The period number equals the number of shells an atom uses.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Group</span><span class="g-phonetic">groop</span></div>
+        <div class="g-def">A vertical column of the periodic table. Elements in the same group have the same number of valence electrons.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Outermost</span><span class="g-phonetic">OWT-er-most</span></div>
+        <div class="g-def">The shell farthest from the nucleus — the last shell that contains electrons.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">5 / 15<span class="nav-title">Valence Electrons</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 6 — Section Hero: Ionization
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-6">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 2</span>
+    <span>Ionization</span>
+    <span>6 / 15</span>
+  </div>
+
+  <div class="slide-body" style="padding:0;">
+    <div class="section-hero" style="min-height:38vh;">
+      <div class="big-letter">±</div>
+      <div class="section-num">⚡ Section 02 — Ionization</div>
+      <h1>Why Atoms Gain & Lose Electrons</h1>
+      <p class="subtitle">Shell filling explains everything about why atoms become ions.</p>
+    </div>
+    
+    <div style="padding:28px 20px 20px;">
+      <p>Atoms are most stable when their outermost shell is <strong>completely full</strong>. When it is not full, atoms will gain or lose electrons to reach that stable state. This process is called <span class="hl">ionization</span>.</p>
+      <div class="callout orange">
+        <div class="callout-label">🤔 The key question for every atom</div>
+        Is it easier to <strong>lose</strong> the few electrons I have in my outer shell — or <strong>gain</strong> the few electrons I need to fill it?
+      </div>
+      <p>The answer depends on how many valence electrons the atom has. This is what separates metals from non-metals.</p>
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-6">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-6')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Ionization</span><span class="g-phonetic">eye-on-ih-ZAY-shun</span></div>
+        <div class="g-def">The process by which an atom gains or loses electrons to become an ion.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Ion</span><span class="g-phonetic">EYE-on</span></div>
+        <div class="g-def">An atom that has gained or lost electrons and now carries an electric charge.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Stable</span><span class="g-phonetic">STAY-bul</span></div>
+        <div class="g-def">In chemistry: having a full outer shell. Stable atoms do not need to react.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">6 / 15<span class="nav-title">What is Ionization?</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 7 — Metals: Losing Electrons
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-7">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 2</span>
+    <span>Metals — Losing Electrons</span>
+    <span>7 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>⬆️ Metals Lose Electrons</h2>
+    <div class="rule"></div>
+    <p>Metals sit on the <strong>left side</strong> of the periodic table. They have <strong>1, 2, or 3 valence electrons</strong> — just a few electrons sitting alone in their outermost shell.</p>
+    <p>For a metal, it is far easier to <span class="hl">lose</span> those few electrons than to gain 5, 6, or 7 more to fill the shell. Losing them empties the outer shell entirely, making the previous full shell the new outer shell.</p>
+
+    <div class="card card-accent-left">
+      <h4>🔋 Example — Lithium (Li), Z = 3</h4>
+      <p>
+        Arrangement: <strong>2, 1</strong><br>
+        Shell 2 has only 1 electron. Needs 7 more to fill — or can lose just 1.<br>
+        <span class="hl">Loses 1 electron</span> → arrangement becomes <strong>2</strong> (Shell 1, full).<br>
+        Lost a negative electron → now has more protons than electrons → charge is <strong>+1</strong>.<br>
+        Becomes the lithium ion: <strong>Li⁺</strong>
+      </p>
+    </div>
+
+    <div class="card card-accent-left gold">
+      <h4>✨ Example — Magnesium (Mg), Z = 12</h4>
+      <p>
+        Arrangement: <strong>2, 8, 2</strong><br>
+        Shell 3 has only 2 electrons. Loses both.<br>
+        <span class="hl">Loses 2 electrons</span> → arrangement becomes <strong>2, 8</strong> (full).<br>
+        Charge is <strong>+2</strong>. Becomes: <strong>Mg²⁺</strong>
+      </p>
+    </div>
+
+    <div style="text-align:center;">
+      <img src="images/2026-05-05_lithium-ion-losing-an-electron-seashell.png" alt="Lithium atom diagram" style="width:60%;border-radius:12px;">
+    </div>
+
+  </div>
+
+  <div class="glossary-ribbon" id="gr-7">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-7')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Cation</span><span class="g-phonetic">KAT-eye-on</span></div>
+        <div class="g-def">A positive ion. Formed when an atom loses electrons. Metals form cations.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Metal</span><span class="g-phonetic">MET-ul</span></div>
+        <div class="g-def">An element on the left side of the periodic table. Metals tend to lose electrons.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Li⁺</span><span class="g-phonetic">LITH-ee-um EYE-on</span></div>
+        <div class="g-def">The lithium ion. The "+" means it lost one electron and now has a +1 charge.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">7 / 15<span class="nav-title">Metals Lose Electrons</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 8 — Non-metals: Gaining Electrons
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-8">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 2</span>
+    <span>Non-metals — Gaining Electrons</span>
+    <span>8 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>⬇️ Non-metals Gain Electrons</h2>
+    <div class="rule"></div>
+    <p>Non-metals sit on the <strong>right side</strong> of the periodic table. They have <strong>5, 6, or 7 valence electrons</strong> — their outer shell is nearly full.</p>
+    <p>For a non-metal, it is much easier to <span class="hl2">gain</span> the 1, 2, or 3 electrons needed to fill the outer shell, rather than lose 5, 6, or 7. Gaining electrons completes the outer shell.</p>
+
+    <div class="card card-accent-left blue">
+      <h4>🧂 Example — Chlorine (Cl), Z = 17</h4>
+      <p>
+        Arrangement: <strong>2, 8, 7</strong><br>
+        Shell 3 has 7 electrons — needs just 1 more to be full (max 8).<br>
+        <span class="hl2">Gains 1 electron</span> → arrangement becomes <strong>2, 8, 8</strong> (full).<br>
+        Gained an electron → now has more electrons than protons → charge is <strong>−1</strong>.<br>
+        Becomes: <strong>Cl⁻</strong>
+      </p>
+    </div>
+
+    <div class="card card-accent-left purple">
+      <h4>🌬️ Example — Oxygen (O), Z = 8</h4>
+      <p>
+        Arrangement: <strong>2, 6</strong><br>
+        Shell 2 has 6 electrons — needs 2 more to be full.<br>
+        <span class="hl4">Gains 2 electrons</span> → arrangement becomes <strong>2, 8</strong> (full).<br>
+        Charge is <strong>−2</strong>. Becomes: <strong>O²⁻</strong>
+      </p>
+      <div style="margin-top:12px;padding:12px 14px;background:#f5ecf5;border-radius:8px;border:1px solid #c4a0c4;font-size:15px;line-height:1.7;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent4);display:block;margin-bottom:5px;">💡 Why is oxygen O₂ in the air? 🌬️</span>
+        Gaining 2 electrons from another atom is one option — but oxygen can also get its 2 missing electrons by <strong>sharing</strong> with a second oxygen atom. Each oxygen brings 6 valence electrons, they share 2 between them, and both atoms "see" a full shell of 8. This is why oxygen in the air exists as <strong>O₂</strong> rather than as single atoms. Sharing electrons is called <em>covalent bonding</em> — something you will study in more detail soon.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="glossary-ribbon" id="gr-8">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-8')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Anion</span><span class="g-phonetic">AN-eye-on</span></div>
+        <div class="g-def">A negative ion. Formed when an atom gains electrons. Non-metals form anions.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Non-metal</span><span class="g-phonetic">non-MET-ul</span></div>
+        <div class="g-def">An element on the right side of the periodic table. Non-metals tend to gain electrons.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Cl⁻</span><span class="g-phonetic">KLOR-ide EYE-on</span></div>
+        <div class="g-def">The chloride ion. The "−" means it gained one electron and has a −1 charge.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Charge</span><span class="g-phonetic">charj</span></div>
+        <div class="g-def">The positive or negative quality of an ion. More protons than electrons = positive. More electrons = negative.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Covalent bond</span><span class="g-phonetic">koh-VAY-lent bond</span></div>
+        <div class="g-def">A bond where two atoms share electrons instead of one stealing from the other. Both atoms get to "count" the shared electrons as their own.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">O₂ (dioxygen)</span><span class="g-phonetic">dy-OX-ih-jen</span></div>
+        <div class="g-def">The form of oxygen found in air. Two oxygen atoms share electrons so that both achieve a full outer shell.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">8 / 15<span class="nav-title">Non-metals Gain Electrons</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 9 — Side by Side Comparison
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-9">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 2</span>
+    <span>Metals vs Non-metals</span>
+    <span>9 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>⚖️ Side by Side</h2>
+    <div class="rule"></div>
+    <p>Here is the complete picture. Both metals and non-metals are trying to reach the same goal — a <strong>full outer shell</strong> — but they take opposite paths to get there.</p>
+
+    <div class="compare-grid">
+      <div class="compare-col metal">
+        <h4>⚙️ Metals — lose electrons</h4>
+        <p><strong>Position:</strong> Left side of table<br>
+        <strong>Valence e⁻:</strong> 1, 2, or 3<br>
+        <strong>They:</strong> Lose electrons<br>
+        <strong>Ion charge:</strong> Positive (+)<br>
+        <strong>Ion type:</strong> Cation<br>
+        <strong>Examples:</strong> Li⁺, Na⁺, Mg²⁺, Ca²⁺</p>
+      </div>
+      <div class="compare-col nonmetal">
+        <h4>🧪 Non-metals — gain electrons</h4>
+        <p><strong>Position:</strong> Right side of table<br>
+        <strong>Valence e⁻:</strong> 5, 6, or 7<br>
+        <strong>They:</strong> Gain electrons<br>
+        <strong>Ion charge:</strong> Negative (−)<br>
+        <strong>Ion type:</strong> Anion<br>
+        <strong>Examples:</strong> Cl⁻, O²⁻, F⁻, N³⁻</p>
+      </div>
+    </div>
+
+    <div class="card card-accent-left gold" style="margin-top:6px;">
+      <h4>😴 Noble Gases — Group 18</h4>
+      <p>Noble gases (He, Ne, Ar…) already have a <strong>full outer shell</strong>. They have no need to gain or lose electrons. This is why they are called <em>inert</em> — they almost never react with anything.</p>
+    </div>
+
+    <div class="callout blue" style="margin-top:6px;">
+      <div class="callout-label">⚡ What happens when ions meet?</div>
+      Ions are <strong>highly reactive</strong> — opposite charges attract each other strongly. When a cation meets an anion they pull together to form a <strong>neutral compound</strong>. For example, Na⁺ and Cl⁻ attract each other and form <strong>sodium chloride</strong> — table salt. Ions with the <strong>same charge repel</strong> each other and push apart.
+    </div>
+
+    <div class="callout dark">
+      <div class="callout-label">⭐ The one rule to remember</div>
+      Ionization is simply each atom taking the <strong>shortest path to a full outer shell</strong>.
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-9">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-9')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Noble gas</span><span class="g-phonetic">NOH-bul gas</span></div>
+        <div class="g-def">Elements in Group 18 with a full outer shell. They are very stable and rarely react.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Inert</span><span class="g-phonetic">in-ERT</span></div>
+        <div class="g-def">Not reactive. Noble gases are inert because their outer shells are already full.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Cation</span><span class="g-phonetic">KAT-eye-on</span></div>
+        <div class="g-def">Positive ion — formed by losing electrons. Metals form cations.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Anion</span><span class="g-phonetic">AN-eye-on</span></div>
+        <div class="g-def">Negative ion — formed by gaining electrons. Non-metals form anions.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Neutral compound</span><span class="g-phonetic">NOO-trul KOM-pownd</span></div>
+        <div class="g-def">A substance with no overall charge, formed when cations and anions combine. Their charges cancel out.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Repel</span><span class="g-phonetic">rih-PEL</span></div>
+        <div class="g-def">To push away. Ions with the same charge (both + or both −) repel each other.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">9 / 15<span class="nav-title">Metals vs Non-metals</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 10 — Period & Group Rules (NEW)
+════════════════════════════════════════════ -->
+<div class="slide-page" id="slide-10">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Part 1 + 2</span>
+    <span>Periods & Groups</span>
+    <span>10 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>💜 Two Rules to Know by Heart</h2>
+    <div class="rule"></div>
+    <p>Everything we have covered — shell filling, valence electrons, ionization — connects directly to the periodic table through exactly two rules.</p>
+
+    <div class="callout dark">
+      <div class="callout-label">📋 Rule 1 — Periods</div>
+      The <strong>period number</strong> tells you how many shells the atom is using.<br><br>
+      Period 1 → 1 shell &nbsp;|&nbsp; Period 2 → 2 shells &nbsp;|&nbsp; Period 3 → 3 shells …<br><br>
+      A new period begins every time electrons start filling a new shell.
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-label">📋 Rule 2 — Groups</div>
+      The <strong>group number</strong> (for main-group elements: Groups 1, 2, and 13–18) tells you how many valence electrons an atom has. This does not apply to helium (which has 2), or to the transition metals (Groups 3–12).<br><br>
+      Group 1 → 1 valence e⁻ &nbsp;|&nbsp; Group 2 → 2 &nbsp;|&nbsp; Group 16 → 6 &nbsp;|&nbsp; Group 17 → 7 &nbsp;|&nbsp; Group 18 → 8 (full)
+    </div>
+
+    <table class="shell-table" style="margin-top:6px;">
+      <thead><tr><th>Element</th><th>Notation</th><th>Period</th><th>Group</th></tr></thead>
+      <tbody>
+        <tr><td>H</td><td>1</td><td>1 — uses 1 shell</td><td>1 — has 1 valence e⁻</td></tr>
+        <tr><td>Li</td><td>2, 1</td><td>2 — uses 2 shells</td><td>1 — has 1 valence e⁻</td></tr>
+        <tr><td>Mg</td><td>2, 8, 2</td><td>3 — uses 3 shells</td><td>2 — has 2 valence e⁻</td></tr>
+        <tr><td>Cl</td><td>2, 8, 7</td><td>3 — uses 3 shells</td><td>17 — has 7 valence e⁻</td></tr>
+        <tr><td>Ca</td><td>2, 8, 8, 2</td><td>4 — uses 4 shells</td><td>2 — has 2 valence e⁻</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout green" style="margin-top:6px;">
+      <div class="callout-label">✏️ What this means in practice</div>
+      If you are given an element's position on the periodic table — even without its name — you can immediately write its electron arrangement. Period 3, Group 16? That's 3 shells, 6 valence electrons → <strong>2, 8, 6</strong>. That's sulfur.
+    </div>
+  </div>
+
+  <div class="glossary-ribbon" id="gr-10">
+    <button class="glossary-toggle" onclick="toggleGlossary('gr-10')">
+      <span>📖 Key Words on This Page</span>
+      <span class="g-arrow">▲</span>
+    </button>
+    <div class="glossary-panel">
+      <div class="glossary-item">
+        <div><span class="g-word">Period</span><span class="g-phonetic">PEER-ee-ud</span></div>
+        <div class="g-def">A horizontal row of the periodic table. The period number = the number of shells the atom uses.</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Group</span><span class="g-phonetic">groop</span></div>
+        <div class="g-def">A vertical column of the periodic table. The group number = the number of valence electrons (for main-group elements).</div>
+      </div>
+      <div class="glossary-item">
+        <div><span class="g-word">Main-group elements</span><span class="g-phonetic">mayn-groop EL-uh-ments</span></div>
+        <div class="g-def">The elements in Groups 1, 2, and 13–18. The group = valence electrons rule applies to these. Transition metals (Groups 3–12) are more complex.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">10 / 15<span class="nav-title">Periods & Groups</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     PRACTICE SLIDES — Easiest to Hardest
+════════════════════════════════════════════ -->
+
+<!-- PRACTICE SLIDE 1 — Pure recall: atomic number, ions, atomic model -->
+<div class="slide-page" id="slide-11">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Practice · Easiest</span>
+    <span>Recall Questions</span>
+    <span>11 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h3>🟢 Practice — Level 1: Recall</h3>
+    <div class="rule"></div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟢 Question 1</div>
+      <div class="q-text">What does the atomic number tell us?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        The atomic number tells us the <strong>number of protons</strong> in the nucleus of an atom. Because a neutral atom has equal numbers of protons and electrons, it also tells us the <strong>number of electrons</strong>. Every element has a unique atomic number — no two elements share the same one.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟢 Question 2</div>
+      <div class="q-text">What would happen to an atom's charge if it were to <strong>gain</strong> extra electrons? What would happen if it were to <strong>lose</strong> electrons?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        <strong>Gaining electrons:</strong> The atom gains extra negative charge. It now has more electrons than protons → overall <strong>negative charge</strong> → becomes an anion (e.g. Cl⁻).<br><br>
+        <strong>Losing electrons:</strong> The atom loses negative charge. It now has more protons than electrons → overall <strong>positive charge</strong> → becomes a cation (e.g. Na⁺).
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟢 Question 3</div>
+      <div class="q-text">If a fluorine atom becomes a fluoride ion, what charge does it have? How did it get that charge?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        Fluorine has atomic number 9 → arrangement <strong>2, 7</strong> → 7 valence electrons.<br>
+        It needs 1 more to fill its outer shell to 8.<br>
+        Fluorine <strong>gains 1 electron</strong> → now has 10 electrons but still only 9 protons.<br>
+        Charge = <strong>−1</strong>. Written as <strong>F⁻</strong> (the fluoride ion).
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟢 Question 4</div>
+      <div class="q-text">Explain what the term "atomic model" means.</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        An atomic model is a <strong>simplified description</strong> of the structure of an atom. Because atoms are too small to see directly, scientists create models — based on experimental evidence — to explain how atoms behave. Models are not perfect pictures of reality; they are the best explanation available at the time. As new experiments provide new evidence, models are updated or replaced. The current model used in this course is the <strong>Bohr shell model</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">11 / 15<span class="nav-title">Practice — Recall</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- PRACTICE SLIDE 2 — Medium: amu, mass number, isotopes, oxygen -->
+<div class="slide-page" id="slide-12">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Practice · Medium</span>
+    <span>Definitions & Apply</span>
+    <span>12 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h3>Practice — Level 2: Definitions & Apply</h3>
+    <div class="rule"></div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟡 Question 5</div>
+      <div class="q-text">What is an atomic mass unit (amu)?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        An atomic mass unit (amu) is the <strong>standard unit used to measure the mass of atoms and subatomic particles</strong>. One amu is defined as one twelfth of the mass of a carbon-12 atom. Protons and neutrons each have a mass of approximately 1 amu. Electrons are so light they are often treated as having no mass (their mass is about 1/1836 amu).
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟡 Question 6</div>
+      <div class="q-text">How is the <strong>mass number</strong> different from the <strong>atomic mass</strong>? What is an isotope? What is a nuclide?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        <strong>Mass number:</strong> A whole number — the total count of protons + neutrons in one specific atom.<br><br>
+        <strong>Atomic mass:</strong> The <em>weighted average</em> mass of all naturally occurring isotopes of an element, expressed in amu. It is usually not a whole number (e.g. chlorine's atomic mass is 35.45 amu).<br><br>
+        <strong>Isotope:</strong> Atoms of the <em>same element</em> (same number of protons) but with <em>different numbers of neutrons</em>, and therefore different mass numbers. E.g. oxygen-16 and oxygen-18.<br><br>
+        <strong>Nuclide:</strong> A specific type of nucleus defined by its number of protons <em>and</em> neutrons. Each isotope is a different nuclide.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟡 Question 7</div>
+      <div class="q-text">For <strong>oxygen-16</strong> and <strong>oxygen-18</strong>, state the number of protons, neutrons, and electrons in each.</div>
+
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        Both are oxygen → atomic number = <strong>8</strong> → 8 protons, 8 electrons (neutral).<br><br>
+        <strong>Oxygen-16:</strong> mass number = 16 → neutrons = 16 − 8 = <strong>8 neutrons</strong><br>
+        Protons: 8 &nbsp;|&nbsp; Neutrons: 8 &nbsp;|&nbsp; Electrons: 8<br><br>
+        <strong>Oxygen-18:</strong> mass number = 18 → neutrons = 18 − 8 = <strong>10 neutrons</strong><br>
+        Protons: 8 &nbsp;|&nbsp; Neutrons: 10 &nbsp;|&nbsp; Electrons: 8<br><br>
+        These are <strong>isotopes</strong> — same element, same electrons, different neutron count.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟡 Question 8</div>
+      <div class="q-text">Oxygen has three naturally occurring isotopes: oxygen-16, oxygen-17, and oxygen-18. Their abundances are approximately 99.76%, 0.04%, and 0.20% respectively.<br><br>
+      a) What does it mean that these are all "oxygen" despite having different mass numbers?<br>
+      b) The atomic mass of oxygen on the periodic table is 15.999 amu. Why is it so close to 16 rather than being an average of 16, 17, and 18?<br>
+      c) Could two atoms of oxygen-16 and oxygen-18 be considered the same element? Explain.</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        a) They are all oxygen because they all have <strong>8 protons</strong>. The atomic number — not the mass number — defines the element. They differ only in their number of neutrons (8, 9, and 10 respectively).<br><br>
+        b) The atomic mass is a <strong>weighted average</strong> based on abundance. Because oxygen-16 makes up nearly 99.76% of all oxygen atoms, it dominates the average and pulls it very close to 16. The tiny amounts of oxygen-17 and oxygen-18 barely shift the result.<br><br>
+        c) Yes — they are the same element. Same number of protons (8), same number of electrons (8), same chemical behaviour. They are simply different <strong>isotopes</strong> of oxygen. Chemically they are identical; they only differ in mass.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟡 Question 9</div>
+      <div class="q-text">
+        a) How many protons are in a hydrogen nucleus?<br>
+        b) How many neutrons are in hydrogen-1?<br>
+        c) How many electrons does a hydrogen atom have?<br>
+        d) How does a hydrogen cation differ from a hydrogen atom? What is another name for it?<br>
+      </div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        a) Hydrogen has atomic number 1 → <strong>1 proton</strong><br>
+        b) Hydrogen-1 has mass number 1, so neutrons = 1 − 1 = <strong>0 neutrons</strong><br>
+        c) Neutral hydrogen has <strong>1 electron</strong><br>
+        d) A hydrogen cation (H⁺) has lost its 1 electron → it is just a <strong>proton</strong><br>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">12 / 15<span class="nav-title">Practice — Apply</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- PRACTICE SLIDE 3 — Medium-hard: ions, periodic table, pairs -->
+<div class="slide-page" id="slide-13">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Practice · Medium–Hard</span>
+    <span>Ions & Periodic Table</span>
+    <span>13 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h3>Practice — Level 3: Ions & the Periodic Table</h3>
+    <div class="rule"></div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟠 Question 10</div>
+      <div class="q-text">How does the iron(III) ion differ from the iron(II) ion?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        Both are iron atoms (atomic number = 26) that have lost electrons to form positive ions.<br><br>
+        <strong>Iron(II) — Fe²⁺:</strong> has lost <strong>2 electrons</strong> → charge of +2<br>
+        <strong>Iron(III) — Fe³⁺:</strong> has lost <strong>3 electrons</strong> → charge of +3<br><br>
+        Fe³⁺ has one <em>fewer</em> electron than Fe²⁺. Both are cations, but Fe³⁺ is more positively charged.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟠 Question 11</div>
+      <div class="q-text">Use the periodic table to put the following elements into pairs that would be expected to have similar chemical properties:<br><br>
+      <strong>Ba, S, Br, Ca, K, F, Se, Na</strong></div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        Elements in the same <strong>group</strong> have the same number of valence electrons and behave similarly:<br><br>
+        <strong>Ba &amp; Ca</strong> — both Group 2 (2 valence electrons, both lose 2 to form 2+ ions)<br>
+        <strong>K &amp; Na</strong> — both Group 1 (1 valence electron, both lose 1 to form 1+ ions)<br>
+        <strong>S &amp; Se</strong> — both Group 16 (6 valence electrons, both gain 2 to form 2− ions)<br>
+        <strong>Br &amp; F</strong> — both Group 17 (7 valence electrons, both gain 1 to form 1− ions)
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟠 Question 12</div>
+      <div class="q-text">Write the name and symbol of the element at each position on the periodic table:<br>
+      a) Period 2, Group 16 &nbsp; b) Period 5, Group 9 &nbsp; c) Period 4, Group 5A</div>
+
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        a) Period 2, Group 16 → <strong>Oxygen (O)</strong><br>
+        b) Period 5, Group 9 → <strong>Rhodium (Rh)</strong><br>
+        c) Period 4, Group 5A (Group 15) → <strong>Arsenic (As)</strong>
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🟠 Question 13</div>
+      <div class="q-text">How many protons, neutrons, and electrons are in each of the following?<br>
+      1. Iron (Fe): atomic number = 26, mass number = 56<br>
+      2. Iodine-127 (atomic number = 53)<br><br>
+      </div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        <strong>Iron-56:</strong> Protons = 26 &nbsp;|&nbsp; Neutrons = 56 − 26 = <strong>30</strong> &nbsp;|&nbsp; Electrons = 26<br><br>
+        <strong>Iodine-127:</strong> Protons = 53 &nbsp;|&nbsp; Neutrons = 127 − 53 = <strong>74</strong> &nbsp;|&nbsp; Electrons = 53<br><br>
+        <!-- <strong>Mass number vs atomic mass:</strong> The mass number is a <em>whole number</em> counting protons + neutrons in one specific atom. The atomic mass is a <em>decimal average</em> across all naturally occurring isotopes of the element (e.g. iodine's atomic mass is 126.9 amu — close to 127 because iodine-127 is the only stable isotope). -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">13 / 15<span class="nav-title">Practice — Ions & Table</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- PRACTICE SLIDE 4 — Hard: mystery element (iron 3+), lightest particle, empty space -->
+<div class="slide-page" id="slide-14">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Practice · Hard</span>
+    <span>Mystery Element & Thinking Questions</span>
+    <span>14 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h3>Practice — Level 4: Multi-step & Thinking</h3>
+    <div class="rule"></div>
+
+<div class="practice-q">
+      <div class="q-tag">🔴 Question 14 — Mystery Element 🕵️</div>
+      <div class="q-text">
+        Look at the image of the mystery element.<br>
+        a) How many protons does this element have?<br>
+        b) How many neutrons does it have?<br>
+        c) Which element is this?<br>
+        d) Write its electron arrangement.<br>
+        e) What period and group is it in?<br>
+        f) This element forms an ion with a 3− charge. How many electrons does the ion have, and why did it gain 3?<br>
+        g) Write the symbol for this ion.<br>
+        h) Name one other element you would expect to behave similarly, and explain why.
+      </div>
+
+      <div class="q-diagram">
+        <img src="images/2026-05-05_mystery-atom.jpg" alt="Mystery atom diagram" style="width:60%;border-radius:12px;display:block;margin:0 auto;">
+      </div>
+
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        a) Atomic number = <strong>7</strong> → 7 protons<br>
+        b) Neutrons = mass number − atomic number = 14 − 7 = <strong>7 neutrons</strong><br>
+        c) Atomic number 7 = <strong>Nitrogen (N)</strong><br>
+        d) 7 electrons → Shell 1: 2, Shell 2: 5 → arrangement: <strong>2, 5</strong><br>
+        e) 2 shells → <strong>Period 2</strong> &nbsp;|&nbsp; 5 valence electrons → <strong>Group 15</strong><br>
+        f) Nitrogen has 5 valence electrons and needs 3 more to fill shell 2 to 8. It <strong>gains 3 electrons</strong> → ion has 7 + 3 = <strong>10 electrons</strong><br>
+        g) Written as <strong>N³⁻</strong> (the nitride ion)<br>
+        h) <strong>Phosphorus (P)</strong> — also in Group 15, also has 5 valence electrons, also gains 3 electrons to form a 3− ion (P³⁻). Same group = same behaviour.
+      </div>
+    </div>
+
+<div class="practice-q">
+      <div class="q-tag">🔴 Question 15</div>
+      <div class="q-text">
+        The three subatomic particles each have very different masses.<br><br>
+        a) Which subatomic particle is the lightest?<br>
+        b) A proton has a mass of 1 amu. How does the mass of a neutron compare?<br>
+        c) An electron has a mass of 0.00055 amu. How many times heavier is a proton than an electron?<br>
+        d) What does this tell us about where most of the mass of an atom is found?
+      </div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        a) The <strong>electron</strong> is by far the lightest — much lighter than either the proton or neutron.<br><br>
+        b) A neutron has almost exactly the <strong>same mass as a proton</strong> — approximately 1 amu. They are nearly identical in mass.<br><br>
+        c) 1 ÷ 0.00055 ≈ <strong>1836</strong>. A proton is about <strong>1836 times heavier</strong> than an electron.<br><br>
+        d) Because protons and neutrons are ~1836 times heavier than electrons, almost all of an atom's mass is concentrated in the <strong>nucleus</strong>. The electrons orbiting outside contribute almost nothing to the total mass.
+      </div>
+    </div>
+
+    <div class="practice-q">
+      <div class="q-tag">🔴 Question 16</div>
+      <div class="q-text">All matter is composed of atoms, which are in turn composed mostly of empty space. Why is it not possible to walk through a wall or to put your hand through your desk?</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">Show Answer</button>
+      <div class="answer-box">
+        Even though atoms are mostly empty space, the electrons in the outermost shells of atoms carry a <strong>negative charge</strong>. When two objects are pressed together, the electrons on the surface atoms of each object <strong>repel</strong> each other strongly (like charges repel). This repulsion feels like a solid barrier — it is the electromagnetic force between electrons, not physical "solidity," that stops your hand passing through the desk.<br><br>
+        In short: matter feels solid because of <strong>electrical repulsion between electrons</strong>, not because there is no space inside atoms.
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">14 / 15<span class="nav-title">Practice — Hard</span></div>
+    <div class="nav-controls">
+      <div class="jump-controls">
+        <input type="number" min="0" max="15" class="jump-select" placeholder="0–15">
+        <button class="jump-btn" onclick="jumpToSlide(this)">Go</button>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">Next →</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="slide-page" id="slide-15">
+  <div class="slide-inner">
+  <div class="slide-header">
+    <span class="slide-tag">Wrap-up</span>
+    <span>End of Class Summary</span>
+    <span>15 / 15</span>
+  </div>
+  <div class="slide-body">
+    <h2>📚 End of Class Summary</h2>
+    <div class="rule"></div>
+
+    <div class="card card-accent-left">
+      <h4>What we covered</h4>
+      <p>Atoms have a tiny nucleus of protons and neutrons with electrons arranged in shells. Electrons fill innermost shells first, and the outermost valence electrons determine how atoms behave and form ions.</p>
+    </div>
+
+    <div class="card card-accent-left blue">
+      <h4>Key takeaways</h4>
+      <ul style="padding-left:18px; margin:0; font-size:16px; line-height:1.8;">
+        <li>Shell capacities are 2, 8, 8 for the first three shells.</li>
+        <li>Atomic number equals the number of electrons in a neutral atom.</li>
+        <li>Metals usually lose electrons to form cations; non-metals often gain electrons to form anions.</li>
+        <li>Noble gases have full outer shells and are mostly unreactive.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="changeSlide(-1)">← Back</button>
+    <div class="nav-indicator">15 / 15<span class="nav-title">Summary</span></div>
+    <button class="nav-btn" disabled>End</button>
+  </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ JAVASCRIPT ════════════════════════════ -->
+<script>
+const TOTAL = 16;
+let current = 0;
+
+function goToSlide(index) {
+  const currentSlide = document.getElementById('slide-' + current);
+  if (currentSlide) currentSlide.classList.remove('active');
+  current = Math.max(0, Math.min(TOTAL - 1, index));
+  const next = document.getElementById('slide-' + current);
+  if (next) {
+    next.classList.add('active');
+    const body = next.querySelector('.slide-body');
+    if (body) body.scrollTop = 0;
+    window.scrollTo(0, 0);
+    document.getElementById('progress-fill').style.width = ((current / (TOTAL - 1)) * 100) + '%';
+  }
+}
+
+function changeSlide(dir) {
+  goToSlide(current + dir);
+}
+
+function jumpToSlide(btn) {
+  const nav = btn.closest('.nav-bar');
+  if (!nav) return;
+  const input = nav.querySelector('.jump-select');
+  if (!input) return;
+  let target = parseInt(input.value, 10);
+  if (Number.isNaN(target)) return;
+  target = Math.max(0, Math.min(TOTAL - 1, target));
+  goToSlide(target);
+}
+
+function toggleAnswer(btn) {
+  const box = btn.nextElementSibling;
+  box.classList.toggle('open');
+  btn.textContent = box.classList.contains('open') ? 'Hide Answer' : 'Show Answer';
+}
+
+function toggleGlossary(id) {
+  const ribbon = document.getElementById(id);
+  const btn = ribbon.querySelector('.glossary-toggle');
+  const panel = ribbon.querySelector('.glossary-panel');
+  btn.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+
+/* ── Shell fill demo ── */
+const caps = [2, 8, 8, 18];
+const colors = ['#c85a1e','#2a6b8a','#5a7a2a','#7a2a6b'];
+const names = ['Shell 1','Shell 2','Shell 3','Shell 4'];
+
+function fillShells() {
+  const z = parseInt(document.getElementById('elemSelect').value);
+  let rem = z;
+  const shells = [];
+  for (let i = 0; i < caps.length && rem > 0; i++) {
+    const n = Math.min(rem, caps[i]);
+    shells.push({ n, max: caps[i], color: colors[i], name: names[i] });
+    rem -= n;
+  }
+  let html = '';
+  const notation = [];
+  shells.forEach((s, idx) => {
+    html += `<div class="shell-row"><span class="shell-label">${s.name}</span>`;
+    for (let j = 0; j < s.n; j++) {
+      html += `<span class="e-dot" style="background:${s.color};animation-delay:${j*0.03}s"></span>`;
+    }
+    for (let j = s.n; j < s.max; j++) {
+      html += `<span class="e-empty"></span>`;
+    }
+    html += `<span style="font-family:'DM Mono',monospace;font-size:12px;color:${s.color};margin-left:6px;">${s.n}/${s.max}</span></div>`;
+    notation.push(s.n);
+  });
+  document.getElementById('shellDisplay').innerHTML = html;
+  document.getElementById('notationResult').textContent =
+    'Arrangement: ' + notation.join(', ') + '  ·  Valence e⁻: ' + notation[notation.length - 1];
+}
+
+// init
+fillShells();
+document.getElementById('progress-fill').style.width = '0%';
+</script>
+</body>
+</html>
