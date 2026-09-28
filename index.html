@@ -119,6 +119,79 @@
     color: #c8f135;
   }
 
+  .card-schedule {
+    background: transparent;
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  .schedule-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .time-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .time-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    width: 100%;
+    border-radius: 50%;
+    background: #c8f135;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    color: #0d0d0d;
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.15s, filter 0.15s, background 0.15s;
+    padding: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .time-link:hover {
+    background: #d7ff4d;
+  }
+
+  .time-link:active {
+    transform: scale(0.97);
+    filter: brightness(0.95);
+  }
+
+  .time-day {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .time-day::before {
+    content: '🗓️';
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .time-time {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 34px);
+    line-height: 1;
+    letter-spacing: -0.5px;
+    margin-top: 4px;
+  }
+
   .card-empty {
     display: flex;
     align-items: center;
@@ -161,7 +234,7 @@
 </head>
 <body>
 
-  <p class="eyebrow">✦ &nbsp; Welcome to my tutoring lessons &nbsp; ✦</p>
+  <p class="eyebrow">✦ &nbsp; Welcome to our tutoring lessons &nbsp; ✦</p>
 
   <h1 class="hero-title">Canadian<br>Grade 10<br><em>Science.</em></h1>
 
@@ -169,21 +242,28 @@
 
   <div class="cards">
     
-    <a class="card" style="background: rgb(201, 164, 255);" href="https://docs.google.com/forms/d/e/1FAIpQLSen53QL3Ap3ny03FcgEJM97eTMfpnlQ_D6fg01Z7J-TP3SciQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">
-      <div class="card-emoji">⏱️</div>
-      <div class="card-body">
-        <div class="card-tag">Best times & days for tutoring</div>
-        <div class="card-title">Poll (fill me out)</div>
+    <div class="card card-schedule">
+      <div class="schedule-body">
+        <div class="card-tag">Links to join tutoring</div>
+        <div class="time-links">
+          <a class="time-link" href="https://meet.google.com/rhj-mcrm-uyw" target="_blank" rel="noopener noreferrer" aria-label="Wednesday morning class at 8 AM">
+            <span class="time-day">Wednesday</span>
+            <span class="time-time">8AM AFT</span>
+          </a>
+          <a class="time-link" href="https://meet.google.com/qou-ucow-qze" target="_blank" rel="noopener noreferrer" aria-label="Friday evening class at 9 PM">
+            <span class="time-day">Friday</span>
+            <span class="time-time">9PM AFT</span>
+          </a>
+        </div>
       </div>
-      <div class="card-arrow">→</div>
-    </a>     
+    </div>     
 
     <a class="card" style="background: rgb(132, 230, 197);" href="https://docs.google.com/document/d/11-w6JWW9EQxH04NIkcCJlU21IqFAr64ZcLZHvm5m3Jw/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
       <div class="card-emoji">🌸</div>
       <div class="card-body">
         <div class="card-tag">Words for students to learn!</div>
         <div class="card-title">Science Dictionary (fill me out)</div>
-        <div class="card-hint">Engligh · Dari</div>
+        <div class="card-hint">English · Dari</div>
       </div>
       <div class="card-arrow">→</div>
     </a>    
@@ -193,7 +273,7 @@
       <div class="card-body">
         <div class="card-tag">Words for Mari to learn!</div>
         <div class="card-title">Dari Dictionary (fill me out)</div>
-        <div class="card-hint">Script · Meaning · Pronunciation</div>
+        <div class="card-hint">Dari · Pronunciation · Meaning</div>
       </div>
       <div class="card-arrow">→</div>
     </a>
@@ -201,7 +281,7 @@
     <a class="card" href="https://docs.google.com/presentation/d/1JkXv8R0TyFlyNxAXbr6W6jafg8-bKgWX3AEgvX4np4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
       <div class="card-emoji">📄</div>
       <div class="card-body">
-        <div class="card-tag">TUTORING - Wednesday, SEPT 16, 2026</div>
+        <div class="card-tag">TUTORING</div>
         <div class="card-title">Curriculum Overview</div>
         <div class="card-hint">What's in the curriculum?</div>
       </div>
@@ -211,9 +291,9 @@
     <a class="card" href="https://docs.google.com/presentation/d/1hlPvsBxgPyEe0QC9vUr1YiiBGS7W0dhifOq2df-IRXc/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
       <div class="card-emoji">🔄</div>
       <div class="card-body">
-        <div class="card-tag">TUTORING - not started</div>
+        <div class="card-tag">TUTORING</div>
         <div class="card-title">Cell Division: Mitosis</div>
-        <div class="card-hint">A, B, C</div>
+        <div class="card-hint">Importance, Process, Definitions</div>
       </div>
       <div class="card-arrow">→</div>
     </a>    
