@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blood Fact Cards</title>
+<!--
+  BLOOD FACT CARDS — SNC2D (Biology: Tissues, Organs and Systems)
+  45-minute activity: 10 student-read cards.
+  Cards and local images work offline. The video and web links need internet.
+
+  HOW TO ADD IMAGES  → scroll to "IMAGE SLOTS" in the <script> below.
+  Paste a URL (needs internet) OR a local file path such as "images/crab.jpg"
+  (put an "images" folder next to this file — works offline). Set
+  showPlaceholder:false on a slot to hide its empty dashed box.
+
+  HOW TO EDIT CARD TEXT → scroll to "CARDS" in the <script> below.
+-->
+<style>
+  :root{
+    --bg:#1b0a10;
+    --card:#b3122e;
+    --card-dark:#7a0019;
+    --paper:#fffaf3;
+    --ink:#1d1d1f;
+    --muted:#55505a;
+    --red:#c8102e;
+    --plasma:#f4c542;
+    --purple:#6b3fa0;
+    --blue:#1f63d6;
+    --grey-box:#efeae4;
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -200px,#4a1020 0%,var(--bg) 60%) var(--bg);
+    color:#fff;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+
+  /* ---------- HEADER ---------- */
+  header{text-align:center;margin:6px 0 18px}
+  h1{font-size:clamp(1.9rem,6vw,3rem);margin:0;letter-spacing:.5px}
+  .sub{font-size:clamp(1.05rem,3.6vw,1.3rem);color:#ffd9de;margin:8px 0 16px}
+  .progress{display:flex;align-items:center;gap:12px;max-width:520px;margin:0 auto}
+  .bag{flex:1;height:26px;border-radius:13px;background:#3d1520;border:2px solid #ff9aa8;overflow:hidden}
+  .bag-fill{height:100%;width:0;background:linear-gradient(90deg,#ff3b55,#c8102e);transition:width .6s ease}
+  .progress-text{font-weight:700;font-size:1.1rem;white-space:nowrap}
+
+  /* ---------- GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(6px,1.2vw,14px);margin:0 auto;max-width:max(320px,min(100%,calc((100vh - 190px) * 5 / 3)))}
+  .tile{
+    position:relative;border:none;cursor:pointer;text-align:left;
+    aspect-ratio:1/1;container-type:inline-size;overflow:hidden;padding:7%;border-radius:clamp(10px,1.4vw,18px);
+    background:linear-gradient(160deg,#d81b3c 0%,var(--card) 45%,var(--card-dark) 100%);
+    color:#fff;font:inherit;display:flex;flex-direction:column;gap:6px;
+    box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12);
+    transition:transform .15s ease, opacity .3s ease, filter .3s ease;
+  }
+  .tile:hover{transform:translateY(-3px)}
+  .tile:focus-visible{outline:4px solid #fff;outline-offset:3px}
+  .num{font-size:1.5rem;font-weight:800;background:rgba(0,0,0,.28);border-radius:999px;width:46px;height:46px;display:grid;place-items:center}
+  .tile-top{display:flex;align-items:center;gap:5cqw}
+  .tile .num{width:22cqw;height:22cqw;font-size:12cqw;flex:none}
+  .tile .emoji{font-size:18cqw;line-height:1}
+  .tile .q{font-size:clamp(10px,9.5cqw,22px);font-weight:700;line-height:1.25}
+  /* Phones: squares are too small for the question, so show number + emoji only */
+  @media (max-width:700px){ .tile .q{display:none} .tile{justify-content:center;align-items:center} .tile-top{flex-direction:column;gap:3cqw} .tile .num{width:42cqw;height:42cqw;font-size:24cqw} .tile .emoji{font-size:30cqw} }
+  .tile.read{opacity:.6;filter:saturate(.35)}
+  .tile.read::after{
+    content:"✅ READ";position:absolute;left:50%;bottom:6%;transform:translateX(-50%) rotate(-6deg);
+    font-weight:900;font-size:clamp(10px,11cqw,22px);letter-spacing:1px;color:#fff;white-space:nowrap;
+    background:rgba(0,0,0,.8);padding:3cqw 5cqw;border-radius:8px;
+  }
+  @media (max-width:700px){ .tile.read::after{content:"✅";background:none;padding:0;font-size:34cqw;bottom:auto;top:50%;transform:translate(-50%,-50%)} }
+  footer{margin-top:26px;text-align:center;color:#d9b3ba;font-size:.95rem;line-height:1.6}
+  .reset{margin-top:10px;background:transparent;color:#ffd9de;border:2px solid #8a3a4a;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+  .reset.armed{background:#c8102e;color:#fff;border-color:#c8102e}
+
+  /* ---------- OVERLAY / FLIP ---------- */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(10,2,5,.82);display:flex;justify-content:center;align-items:stretch;padding:12px;perspective:1600px}
+  .overlay[hidden]{display:none}
+  .flip{position:relative;width:min(820px,100%);height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.3,1)}
+  .flip.flipped{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;border-radius:var(--radius);-webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:hidden}
+  .face.front{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px;
+    background:linear-gradient(160deg,#d81b3c 0%,var(--card) 45%,var(--card-dark) 100%)}
+  .face.front .emoji{font-size:6rem}
+  .face.front .q{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;max-width:16em}
+  .face.front .num{width:70px;height:70px;font-size:2.2rem;margin-bottom:10px}
+  .face.back{transform:rotateY(180deg);background:var(--paper);color:var(--ink);overflow-y:auto;-webkit-overflow-scrolling:touch;cursor:pointer}
+  /* After the flip finishes, drop the 3D so scrolling is smooth on phones */
+  .flip.settled{transform:none;transition:none}
+  .flip.settled .face.front{display:none}
+  .flip.settled .face.back{transform:none}
+
+  /* ---------- CARD BACK CONTENT ---------- */
+  .back-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--card);color:#fff}
+  .back-head .num{flex:none;width:44px;height:44px;font-size:1.4rem}
+  .back-head h2{margin:0;font-size:clamp(1.15rem,3.8vw,1.5rem);line-height:1.25}
+  .back-head .emoji{font-size:2rem}
+  .back-body{padding:18px 20px 30px;font-size:clamp(1.15rem,3.9vw,1.35rem);line-height:1.55}
+  .back-body p{margin:0 0 12px}
+  .back-body ul{margin:0 0 12px;padding-left:1.2em}
+  .back-body li{margin:4px 0}
+  .back-body b{color:#8a0b1f}
+  table.facts{border-collapse:collapse;width:100%;margin:6px 0 14px;font-size:.95em}
+  table.facts th{background:var(--card);color:#fff;text-align:left;padding:8px 10px}
+  table.facts td{border-bottom:1px solid #e3d9cf;padding:8px 10px}
+  table.facts tr:nth-child(even) td{background:#f6efe7}
+
+  figure{margin:14px 0 16px;background:#fff;border:2px solid #eadfd3;border-radius:14px;padding:12px}
+  figure svg{display:block;width:100%;height:auto;max-height:360px}
+  figure img{display:block;max-width:100%;max-height:380px;margin:0 auto;border-radius:8px}
+  .figure-large img{width:100%;max-height:560px;object-fit:contain}
+  @media (max-width:520px){ figure{padding:6px;margin-left:-8px;margin-right:-8px} .back-body{padding:16px 14px 26px} }
+  figcaption{font-size:.8rem;color:var(--muted);margin-top:6px;text-align:center}
+  .img-slot{border:3px dashed #c9b8a6;border-radius:14px;padding:16px;margin:14px 0;text-align:center;color:#7a6a5a;font-size:.95rem;background:#fbf6ef}
+  .img-slot b{color:#7a6a5a}
+
+  .box{border-radius:14px;padding:12px 16px;margin:14px 0}
+  .box h3{margin:0 0 6px;font-size:1.05rem;text-transform:uppercase;letter-spacing:.6px}
+  .vocab{background:#fff;border:2px solid #f1c4cc}
+  .vocab h3{color:#a3122a}
+  .vocab dl{margin:0}
+  .vocab dt{font-weight:800}
+  .vocab dt .pron{font-weight:500;color:var(--muted);font-style:italic}
+  .vocab dd{margin:0 0 8px 0}
+  .math{background:var(--grey-box)}
+  .math h3{color:#3b3540}
+  .ask{background:#fff4d6;border:2px solid #f2d27a}
+  .ask h3{color:#7a5600}
+  .dari{background:#eef6ee;border:2px solid #b9dab9}
+  .dari h3{color:#2d6a2d}
+  .dari ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+  .dari li{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+  .fa{font-family:"Noto Naskh Arabic","Segoe UI","Geeza Pro",Tahoma,sans-serif;font-size:1.45em;color:#1e4d1e;font-weight:700}
+  .rom{font-style:italic;color:#2d6a2d}
+  .en{color:var(--muted)}
+  .check{font-size:.8em;background:#ffe2a8;color:#6b4a00;border-radius:6px;padding:1px 6px;font-weight:700}
+  .listen a{color:var(--blue);font-weight:700}
+  .video-embed{aspect-ratio:16/9;margin:14px 0;overflow:hidden;border-radius:12px;background:#000}
+  .video-embed iframe{display:block;width:100%;height:100%;border:0}
+  .back-foot{text-align:center;color:var(--muted);font-size:1rem;padding:6px 16px 24px}
+  .back-foot strong{color:var(--red)}
+
+  .team{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+  .tm{background:#fbf3ee;border-radius:12px;padding:10px 6px;font-size:.95rem}
+  .tm-e{font-size:2.4rem}
+  .tm b{display:block;color:#8a0b1f}
+
+  /* SVG text styles */
+  .t-b{font:700 17px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#1d1d1f}
+  .t-m{font:600 15px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#1d1d1f}
+  .t-s{font:400 15px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#55505a}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000;color:#fff;font-weight:800;font-size:1.4rem;padding:10px 18px;border-radius:12px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:.9}
+
+  @media (prefers-reduced-motion: reduce){
+    .flip,.tile,.bag-fill{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🩸 Blood: 10 Fact Cards</h1>
+    <p class="sub">Choose a card to read.</p>
+    <div class="progress" aria-live="polite">
+      <div class="bag" aria-hidden="true"><div class="bag-fill" id="bagFill"></div></div>
+      <div class="progress-text" id="progressText">0 / 10 read</div>
+    </div>
+  </header>
+
+  <main class="grid" id="grid" aria-label="Fact cards"></main>
+
+  <footer>
+    Choose a number to open a card. Tap the card, or press Esc, to go back.<br>
+    <button class="reset" id="resetBtn" type="button">↺ Reset</button>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="flip" id="flip">
+    <div class="face front" id="ovFront"></div>
+    <div class="face back" id="ovBack" tabindex="-1"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   IMAGE SLOTS — paste your image links here.
+   url:    a web link (needs internet) OR a local path like "images/crab.jpg"
+   credit: photo credit / licence shown under the image
+   Empty url = a dashed "image to add" box shows on the card by default.
+   Set showPlaceholder:false on an individual slot to hide its empty box.
+   Set SHOW_EMPTY_IMAGE_SLOTS to false to hide all empty boxes in class.
+   ===================================================================== */
+const SHOW_EMPTY_IMAGE_SLOTS = true;
+const IMAGE_SLOTS = {
+  1:  [{ need:"(Optional) Photo of a real blood tube after spinning — yellow plasma on top, red cells at the bottom", url:"", credit:"", showPlaceholder:false }],
+  2:  [{ need:"Microscope photo of red blood cells (e.g. scanning electron microscope image)", url:"images/Peter_Gabriel_-_Live_Blood.jpg", credit:"https://en.wikipedia.org/wiki/Live_Blood" }],
+  4:  [{ need:"Adult skeleton diagram with the blood-making (red marrow) bones shaded", url:"images/Adult_skeleton_with_red_marrow_bones_shaded.png", credit:"https://ecampusontario.pressbooks.pub/structureandfunctionofhumanbodymohawkedition/chapter/6-1-the-functions-of-the-skeletal-system/" }],
+  8:  [{ need:"Microscope photo of sickle cells next to normal red blood cells", url:"images/Healthy vs Sickle Cell Blood Smears_chatGPT.png", credit:"Generated by ChatGPT", large:true }],
+};
+
+/* =====================================================================
+   DIAGRAMS (drawn in code, work offline)
+   ===================================================================== */
+const RED="#c8102e", PURPLE="#6b3fa0", BLUE="#1f63d6", PLASMA="#f4c542";
+
+function rng(seed){ return function(){ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; }; }
+function scatter(n, R, minD, seed, existing){
+  const r=rng(seed), pts=existing?existing.slice():[], out=[];
+  let tries=0;
+  while(out.length<n && tries<5000){
+    tries++;
+    const a=r()*Math.PI*2, d=Math.sqrt(r())*R, x=Math.cos(a)*d, y=Math.sin(a)*d;
+    if(pts.every(p=>Math.hypot(p[0]-x,p[1]-y)>=minD)){ pts.push([x,y]); out.push([x,y]); }
+  }
+  return out;
+}
+function arrowDefs(id,color){
+  return `<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker>`;
+}
+function rbcGrad(id){
+  return `<radialGradient id="${id}"><stop offset="0%" stop-color="#ff8a98"/><stop offset="40%" stop-color="#e2344c"/><stop offset="100%" stop-color="#a30d24"/></radialGradient>`;
+}
+
+const SVG = {
+  tube(){
+    return `<svg viewBox="0 0 440 300" role="img" aria-label="Test tube after spinning: plasma 55 percent on top, a thin white layer less than 1 percent, red blood cells 45 percent at the bottom">
+      <defs><clipPath id="tubeClip"><path d="M80,20 H160 V240 A40,40 0 0 1 80,240 Z"/></clipPath></defs>
+      <g clip-path="url(#tubeClip)">
+        <rect x="80" y="40" width="80" height="128" fill="${PLASMA}"/>
+        <rect x="80" y="168" width="80" height="6" fill="#ffffff" stroke="#bbb" stroke-width="1"/>
+        <rect x="80" y="174" width="80" height="120" fill="${RED}"/>
+      </g>
+      <path d="M80,20 H160 V240 A40,40 0 0 1 80,240 Z" fill="none" stroke="#333" stroke-width="3"/>
+      <rect x="72" y="8" width="96" height="16" rx="4" fill="#555"/>
+      <g stroke="#333" stroke-width="2">
+        <line x1="166" y1="104" x2="206" y2="104"/><line x1="166" y1="171" x2="206" y2="171"/><line x1="166" y1="235" x2="206" y2="235"/>
+      </g>
+      <text x="214" y="100" class="t-b">Plasma — 55%</text>
+      <text x="214" y="120" class="t-s">yellow, mostly water</text>
+      <text x="214" y="168" class="t-b">White cells + platelets</text>
+      <text x="214" y="188" class="t-s">less than 1%</text>
+      <text x="214" y="232" class="t-b">Red blood cells — 45%</text>
+      <text x="214" y="252" class="t-s">packed most tightly, so they sink</text>
+      <text x="120" y="296" text-anchor="middle" class="t-s">(by volume)</text>
+    </svg>`;
+  },
+  rbc(){
+    return `<svg viewBox="0 0 460 235" role="img" aria-label="Red blood cell: top view 7.5 micrometres wide; side view 2 micrometres thick, thinner in the middle">
+      <defs>${rbcGrad("rbcG")}${arrowDefs("arrK","#333")}</defs>
+      <text x="100" y="20" text-anchor="middle" class="t-b">Top view</text>
+      <circle cx="100" cy="100" r="70" fill="url(#rbcG)"/>
+      <line x1="32" y1="188" x2="168" y2="188" stroke="#333" stroke-width="2.5" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+      <text x="100" y="216" text-anchor="middle" class="t-b">7.5 µm wide</text>
+      <text x="310" y="20" text-anchor="middle" class="t-b">Side view (cut in half)</text>
+      <path d="M240,100 C240,76 262,76 280,82 C296,88 300,92 310,92 C320,92 324,88 340,82 C358,76 380,76 380,100 C380,124 358,124 340,118 C324,112 320,108 310,108 C300,108 296,112 280,118 C262,124 240,124 240,100 Z" fill="${RED}"/>
+      <line x1="398" y1="80" x2="398" y2="120" stroke="#333" stroke-width="2.5" marker-start="url(#arrK)" marker-end="url(#arrK)"/>
+      <text x="406" y="105" class="t-b">2 µm</text>
+      <line x1="310" y1="145" x2="310" y2="112" stroke="#333" stroke-width="2" marker-end="url(#arrK)"/>
+      <text x="310" y="165" text-anchor="middle" class="t-s">thin, pressed-in middle</text>
+      <text x="310" y="198" text-anchor="middle" class="t-m">curves inward</text><text x="310" y="220" text-anchor="middle" class="t-m">on both sides</text>
+    </svg>`;
+  },
+  cells(){
+    let dots="";
+    const N=240, g=Math.PI*(3-Math.sqrt(5));
+    for(let i=0;i<N;i++){ const r=76*Math.sqrt((i+.5)/N), a=i*g;
+      dots+=`<circle cx="${(340+r*Math.cos(a)).toFixed(1)}" cy="${(115+r*Math.sin(a)).toFixed(1)}" r="3" fill="#7d0a1c"/>`; }
+    return `<svg viewBox="0 0 460 265" role="img" aria-label="A normal body cell has a nucleus and mitochondria. A red blood cell has neither and is packed with hemoglobin.">
+      <text x="110" y="20" text-anchor="middle" class="t-b">Normal body cell</text>
+      <circle cx="110" cy="115" r="85" fill="#fde7d9" stroke="#c98b6b" stroke-width="3"/>
+      <circle cx="100" cy="105" r="30" fill="#8e6bbf"/><circle cx="108" cy="98" r="8" fill="#5a3a8a"/>
+      <ellipse cx="160" cy="150" rx="17" ry="8" fill="#f39c4a" stroke="#b8641b" stroke-width="2" transform="rotate(-25 160 150)"/>
+      <ellipse cx="68" cy="165" rx="17" ry="8" fill="#f39c4a" stroke="#b8641b" stroke-width="2" transform="rotate(20 68 165)"/>
+      <ellipse cx="155" cy="70" rx="17" ry="8" fill="#f39c4a" stroke="#b8641b" stroke-width="2" transform="rotate(35 155 70)"/>
+      <text x="110" y="226" text-anchor="middle" class="t-m">✓ nucleus (purple)</text>
+      <text x="110" y="248" text-anchor="middle" class="t-m">✓ mitochondria (orange)</text>
+      <text x="340" y="20" text-anchor="middle" class="t-b">Red blood cell</text>
+      <circle cx="340" cy="115" r="85" fill="#e23a52"/>${dots}
+      <text x="340" y="226" text-anchor="middle" class="t-m">✗ no nucleus  ✗ no mitochondria</text>
+      <text x="340" y="248" text-anchor="middle" class="t-m">✓ packed with hemoglobin (dots)</text>
+    </svg>`;
+  },
+  tree(){
+    return `<svg viewBox="0 0 460 270" role="img" aria-label="One stem cell in red bone marrow can become a red blood cell, a white blood cell, or platelets">
+      <defs>${rbcGrad("rbcG2")}${arrowDefs("arrP",PURPLE)}</defs>
+      <circle cx="230" cy="58" r="40" fill="#f3e1f7" stroke="${PURPLE}" stroke-width="3"/>
+      <circle cx="230" cy="58" r="18" fill="${PURPLE}"/>
+      <text x="285" y="52" class="t-b">Stem cell</text>
+      <text x="285" y="72" class="t-s">in red bone marrow</text>
+      <g stroke="${PURPLE}" stroke-width="3">
+        <line x1="205" y1="92" x2="100" y2="150" marker-end="url(#arrP)"/>
+        <line x1="230" y1="100" x2="230" y2="146" marker-end="url(#arrP)"/>
+        <line x1="255" y1="92" x2="360" y2="150" marker-end="url(#arrP)"/>
+      </g>
+      <circle cx="80" cy="185" r="30" fill="url(#rbcG2)"/>
+      <circle cx="230" cy="185" r="32" fill="#f7f3ff" stroke="${PURPLE}" stroke-width="2.5"/>
+      <circle cx="218" cy="180" r="10" fill="${PURPLE}"/><circle cx="234" cy="174" r="10" fill="${PURPLE}"/><circle cx="242" cy="192" r="10" fill="${PURPLE}"/>
+      <ellipse cx="365" cy="175" rx="9" ry="6" fill="#b07cc6"/><ellipse cx="390" cy="190" rx="8" ry="5" fill="#b07cc6" transform="rotate(30 390 190)"/>
+      <ellipse cx="360" cy="200" rx="7" ry="5" fill="#b07cc6"/><ellipse cx="385" cy="168" rx="6" ry="4" fill="#b07cc6"/>
+      <text x="80" y="240" text-anchor="middle" class="t-b">Red blood cell</text>
+      <text x="80" y="260" text-anchor="middle" class="t-s">carries oxygen</text>
+      <text x="230" y="240" text-anchor="middle" class="t-b">White blood cell</text>
+      <text x="230" y="260" text-anchor="middle" class="t-s">fights germs</text>
+      <text x="378" y="240" text-anchor="middle" class="t-b">Platelets</text>
+      <text x="378" y="260" text-anchor="middle" class="t-s">plug cuts</text>
+    </svg>`;
+  },
+  team(){
+    return `<div class="team">
+      <div class="tm"><div class="tm-e">🚚</div><b>Red cells</b>carry oxygen</div>
+      <div class="tm"><div class="tm-e">🛡️</div><b>White cells</b>fight germs</div>
+      <div class="tm"><div class="tm-e">🔧</div><b>Platelets</b>plug cuts</div>
+    </div>`;
+  },
+  calendar(){
+    const x=150, k=225/84, rows=[
+      {l:"Males", s:"must wait", d:56, c:"#d0475f"},
+      {l:"Females", s:"must wait", d:84, c:RED}];
+    let g="";
+    rows.forEach((r,i)=>{ const y=30+i*62;
+      g+=`<text x="${x-12}" y="${y+16}" text-anchor="end" class="t-b">${r.l}</text><text x="${x-12}" y="${y+34}" text-anchor="end" class="t-s">${r.s}</text>`;
+      g+=`<rect x="${x}" y="${y}" width="${r.d*k}" height="36" rx="6" fill="${r.c}"/>`;
+      g+=`<text x="${x+r.d*k+8}" y="${y+24}" class="t-b">${r.d} days</text>`; });
+    return `<svg viewBox="0 0 460 150" role="img" aria-label="Canadian minimum wait between whole blood donations: 56 days for males and 84 days for females">${g}</svg>`;
+  },
+  marrow(){
+    const cell=(cx,cy,type)=>{
+      if(type==="r") return `<circle cx="${cx}" cy="${cy}" r="9" fill="#d42a43"/><circle cx="${cx}" cy="${cy}" r="3.5" fill="#ef7f8e"/>`;
+      if(type==="w") return `<circle cx="${cx}" cy="${cy}" r="11" fill="#f7f3ff" stroke="${PURPLE}" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="5" fill="${PURPLE}"/>`;
+      if(type==="p") return `<circle cx="${cx}" cy="${cy}" r="3.5" fill="#b07cc6"/>`;
+      return `<circle cx="${cx}" cy="${cy}" r="12" fill="#7d4bb3"/><circle cx="${cx+1}" cy="${cy-1}" r="6" fill="#3f2066"/>`;
+    };
+    const draw=(cx,cy,mix,seed)=>{ let s="", all=[]; const order=[];
+      mix.forEach(([t,n])=>{ for(let i=0;i<n;i++) order.push(t); });
+      const pts=scatter(order.length,78,22,seed);
+      pts.forEach((p,i)=>{ s+=cell((cx+p[0]).toFixed(1),(cy+p[1]).toFixed(1),order[i]); });
+      return s; };
+    return `<svg viewBox="0 0 460 260" role="img" aria-label="Healthy marrow has a mix of red cells, white cells and platelets. Leukemia marrow is crowded with abnormal white cells.">
+      <circle cx="115" cy="110" r="98" fill="#fbe3e6" stroke="#c98b8b" stroke-width="3"/>
+      <circle cx="345" cy="110" r="98" fill="#fbe3e6" stroke="#c98b8b" stroke-width="3"/>
+      ${draw(115,110,[["r",22],["w",4],["p",8]],3)}
+      ${draw(345,110,[["a",26],["r",3],["p",2]],5)}
+      <text x="115" y="232" text-anchor="middle" class="t-b">Healthy marrow</text>
+      <text x="115" y="252" text-anchor="middle" class="t-s">a good mix of cells</text>
+      <text x="345" y="232" text-anchor="middle" class="t-b">Leukemia</text>
+      <text x="345" y="252" text-anchor="middle" class="t-s">crowded with abnormal cells</text>
+    </svg>`;
+  },
+  osmosis(){
+    const beaker=(cx,fill)=>`<path d="M${cx-53},92 V200 Q${cx-53},218 ${cx-35},218 H${cx+35} Q${cx+53},218 ${cx+53},200 V92 Z" fill="${fill}"/><path d="M${cx-55},62 V200 Q${cx-55},220 ${cx-35},220 H${cx+35} Q${cx+55},220 ${cx+55},200 V62" fill="none" stroke="#555" stroke-width="3"/>`;
+    let star=""; for(let i=0;i<28;i++){ const a=i/28*Math.PI*2, r=i%2?16:25; star+=(i?"L":"M")+(80+Math.cos(a)*r).toFixed(1)+","+(155+Math.sin(a)*r).toFixed(1);} star+="Z";
+    let salt=""; scatter(16,40,12,9).forEach(p=>{ salt+=`<rect x="${(80+p[0]*1.1).toFixed(1)}" y="${(155+p[1]*1.3).toFixed(1)}" width="5" height="5" fill="#fff" stroke="#9fb8d4"/>`; });
+    let bits=""; [[0,-34],[30,-18],[32,20],[0,36],[-32,18],[-30,-20]].forEach(([dx,dy],i)=>{ bits+=`<path d="M0,-8 L9,-2 L6,8 L-6,7 L-8,-3 Z" fill="#d42a43" transform="translate(${380+dx} ${155+dy}) rotate(${i*50})"/>`; });
+    const arr=(cx,inward)=>[0,90,180,270].map(a=>{ const t=a*Math.PI/180, r1=inward?50:31, r2=inward?33:47;
+      return `<line x1="${(cx+Math.cos(t)*r1).toFixed(1)}" y1="${(155+Math.sin(t)*r1).toFixed(1)}" x2="${(cx+Math.cos(t)*r2).toFixed(1)}" y2="${(155+Math.sin(t)*r2).toFixed(1)}" stroke="${BLUE}" stroke-width="3" marker-end="url(#arrO)"/>`; }).join("");
+    return `<svg viewBox="0 0 460 275" role="img" aria-label="Three beakers. Very salty water: water moves out, cell shrivels. 0.9 percent salt: balanced, cell normal. Pure water: water moves in, cell bursts.">
+      <defs>${arrowDefs("arrO",BLUE)}</defs>
+      <text x="80" y="40" text-anchor="middle" class="t-b">Very salty</text>
+      <text x="230" y="40" text-anchor="middle" class="t-b">0.9% salt</text>
+      <text x="380" y="40" text-anchor="middle" class="t-b">Pure water</text>
+      ${beaker(80,"#cfe0f5")}${beaker(230,"#dcebfb")}${beaker(380,"#eef7ff")}
+      ${salt}
+      <path d="${star}" fill="#a3122a"/>${arr(80,false)}
+      <circle cx="230" cy="155" r="26" fill="#d42a43"/><circle cx="230" cy="155" r="9" fill="#ef7f8e"/>
+      <text x="230" y="205" text-anchor="middle" class="t-m" style="fill:${BLUE}">in = out</text>
+      ${bits}${arr(380,true)}
+      <text x="80" y="246" text-anchor="middle" class="t-b">Shrivels</text>
+      <text x="230" y="246" text-anchor="middle" class="t-b">Normal ✓</text>
+      <text x="380" y="246" text-anchor="middle" class="t-b">Bursts 💥</text>
+      <text x="80" y="266" text-anchor="middle" class="t-s">water moves OUT</text>
+      <text x="230" y="266" text-anchor="middle" class="t-s">balanced</text>
+      <text x="380" y="266" text-anchor="middle" class="t-s">water moves IN</text>
+    </svg>`;
+  },
+};
+
+/* =====================================================================
+   CARDS — edit the text here.
+   body:  read-aloud text (HTML)
+   fig:   which drawing to show (name from SVG above), or "" for none
+   vocab: [word, pronunciation, meaning]
+   extra: {title, html}  → grey box near the end (math / bonus)
+   ask:   question for the group
+   dari:  [Dari, romanised, English, needsCheck(true/false)]
+   ===================================================================== */
+const CARDS = [
+{ n:1, emoji:"🧪", q:"What is blood made of?",
+  body:`<p>A machine called a <b>centrifuge</b> spins blood very fast. The heaviest parts sink, and the blood separates into three layers. The percentages show how much space each layer takes up:</p>
+  <ul><li>🟡 <b>55% plasma</b> — a yellow liquid, mostly water. It carries food, salts, hormones (chemical messages), and waste.</li>
+  <li>⚪ <b>Less than 1%</b> — a thin white layer of white blood cells and platelets.</li>
+  <li>🔴 <b>45% red blood cells</b> — these sink to the bottom because they are packed most tightly.</li></ul>
+  <p>An adult has about <b>5 litres</b> of blood.</p>`,
+  fig:"tube",
+  vocab:[["centrifuge","SEN-trih-fyooj","a machine that spins blood to separate it"],["density","DEN-sih-tee","how tightly something is packed into a space"]],
+  extra:{title:"✨ Space vs. weight", html:`Red cells take up 45% of the blood's space, but make up about 47% of its weight. One mL of red cells weighs more than one mL of plasma.`},
+  dari:[["خون","khun","blood"],["پلازما","plāzmā","plasma"],["کثافت","kasāfat","density"]] },
+
+{ n:2, emoji:"🍩", q:"Why is a red blood cell shaped like a donut with no hole?",
+  body:`<p>A red blood cell has a shape called a <b>biconcave disc</b>: it is round and curves inward on both sides. It is about <b>7.5 micrometres (µm)</b> wide and <b>2 µm</b> thick.</p>
+  <p>This shape gives the cell more surface area (more outside space), so oxygen can move in and out quickly. It also makes the cell soft and bendy. The cell can squeeze through <b>capillaries</b>, the smallest blood vessels. Some are narrower than the cell.</p>`,
+  fig:"rbc",
+  vocab:[["biconcave","by-KON-kayv","curved inward on both sides"],["capillary","KAP-ih-lair-ee","the smallest kind of blood vessel"]],
+  extra:{title:"🔢 Math", html:`A pinky nail is about 8 mm wide.<br>8 mm = 8,000 µm<br>About 1,000 red blood cells placed side by side would fit across a pinky nail.`},
+  dari:[["کرویات سرخ","kurwiyāt-e surkh","red blood cells"],["موی‌رگ","muyrag","capillary",true]] },
+
+  { n:3, emoji:"🚚", q:"Why do red blood cells lose their nucleus?",
+  body:`<p>Red blood cells are like <b>trucks</b> that carry oxygen through blood vessels. As a red blood cell grows, it loses its <b>nucleus</b>, the part that holds the cell's DNA (its instructions). This leaves more room for oxygen.</p>
+  <p>A red blood cell has no nucleus or <b>mitochondria</b> (parts that release energy). It is packed with about <b>270 million hemoglobin</b> molecules. Each hemoglobin molecule has 4 <b>iron</b> atoms and can carry 4 oxygen molecules. Iron makes blood red.</p>
+  <p>Red blood cells do not use the oxygen they carry because they have no mitochondria.</p>`,
+  fig:"cells",
+  vocab:[["hemoglobin","HEE-muh-gloh-bin","the protein in red blood cells that carries oxygen"],["erythrocyte","eh-RITH-roh-site","the scientific name for a red blood cell"]],
+  extra:{title:"🔢 Math", html:`270 million × 4 = 1,080 million. Each red blood cell can carry <b>about 1 billion oxygen molecules</b>.`},
+  dari:[["هسته","hasta","nucleus"],["آهن","āhan","iron"],["اکسیجن","oksijan","oxygen"]] },
+
+{ n:4, emoji:"🏭", q:"How long does a red blood cell live and where are blood cells made?",
+  body:`<p>A red blood cell lives for about <b>120 days</b> (around 4 months). It cannot repair itself or divide. When it gets old, the body removes it and reuses its <b>iron</b> to make new red blood cells.</p>
+  <p>Blood cells are made in <b>red bone marrow</b>, the soft tissue inside some bones. <b>Stem cells</b> in the marrow can become red blood cells, white blood cells, or platelets.</p>
+  <ul><li>✅ <b>Bones that make blood in adults:</b> skull, spine, ribs, breastbone, hips, and the top ends of the thigh and upper-arm bones.</li>
+  <li>❌ <b>Bones that do not make blood:</b> hands, feet, forearms, lower legs, and the middle parts of long bones. These parts contain <b>yellow marrow</b>, which is mostly fat.</li></ul>
+  <p>At birth, almost every bone makes blood. As a person grows, this changes. By the early 20s, most blood cells are made in the bones listed above.</p>`,
+  fig:"tree",
+  vocab:[["marrow","MAIR-oh","the soft tissue inside bones"],["stem cell","STEM sel","a basic cell that can become different kinds of blood cells"]],
+  dari:[["مغز استخوان","maghz-e ustukhān","bone marrow"],["حجرهٔ بنیادی","hujra-ye bunyādi","stem cell",true]] },
+
+{ n:5, emoji:"🔢", q:"How many blood cells are in one drop?",
+  body:`<p>In <b>1 millilitre (mL)</b> of blood, there are about:</p>
+  <ul><li>🔴 <b>5 billion</b> red blood cells</li><li>🟣 <b>250 million</b> platelets</li><li>⚪ <b>7 million</b> white blood cells</li></ul>
+  <p>One drop is about 0.05 mL, so it holds about <b>250 million red cells</b> — about five times as many as there are people in Afghanistan. Red blood cells are the most common cells in your body.</p>`,
+  extra:{title:"🔢 Math", html:`5 L = 5,000 mL<br>5,000 × 5,000,000,000 = <b>25 trillion red cells</b> in your body.<br>If they were lined up, they would stretch about <b>187,500 km</b> — about <b>4.7 times around Earth!</b>`},
+  dari:[["قطره","qatra","drop"],["ملیارد","milyārd","billion"]] },
+
+{ n:6, emoji:"🛡️", q:"Which blood cells fight germs and help stop bleeding?",
+  body:`<p><b>White blood cells</b> help protect your body from germs. Some are called <b>phagocytes</b>. They swallow and eat bacteria. <b>Lymph nodes</b> are small glands that help fight germs. They can swell when you are sick.</p>
+  <p><b>Platelets</b> are small pieces of cells. When you cut yourself, platelets stick together to plug the cut. A net made of protein then traps blood cells and forms a <b>clot</b> (a thick plug that helps stop bleeding). The clot dries and becomes a scab.</p>
+  <div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/3KrCmBNiJRI" title="Blood cells and platelets video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+  <p><a href="https://www.youtube.com/watch?v=3KrCmBNiJRI" target="_blank" rel="noopener noreferrer">Watch on YouTube</a></p>`,
+  fig:"team",
+  vocab:[["phagocyte","FAG-oh-site","a white blood cell that swallows germs"],["leukocyte","LOO-koh-site","another name for a white blood cell"]],
+  extra:null,
+  dari:[["کرویات سفید","kurwiyāt-e safed","white blood cells",true],["پلیت‌لیت","pletlet","platelet",true]] },
+
+{ n:7, emoji:"⏳", q:"Why can't you donate blood every week?",
+  body:`<p>A blood donation is about <b>450 mL</b> — almost half a litre. In Canada, you must be at least <b>17</b> to donate. After donating, men must wait <b>56 days</b> and women must wait <b>84 days</b>.</p>
+  <p>Your body makes about <b>2 million new red blood cells each second</b>. Still, it takes <b>several weeks</b> before you can donate again!<p>
+  <p>The bottleneck (slowest step) is actually how fast you can get more iron to make more haemoglobin (the part of red blood cells that uses iron and carries oxygen)! Your body uses stored iron and takes in more from food and drink. Men often have more stored iron than women, which contributes to why they can donate more frequently.</p>
+  <p>In most people, hemoglobin returns to its usual level within <b>6–12 weeks</b>.
+  <p>During a period, a woman loses about <b>30–40 mL of blood</b> each month. Over a year, that adds up to about the same amount as one blood donation.</p>
+  <p><small>Source: <a href="https://www.blood.co.uk/the-donation-process/after-your-donation/how-your-body-replaces-blood/" target="_blank" rel="noopener noreferrer">NHS Blood and Transplant (UK)</a>. Wait times can vary by country.</small></p>`,
+  fig:"calendar",
+  vocab:[["donate","DOH-nate","to give blood to help another person"]],
+  dari:[["عمر","umr","lifespan"],["اهدای خون","ihdā-ye khun","blood donation"]] },
+
+{ n:10, emoji:"🎗️", q:"What happens when blood cells grow too fast?",
+  body:`<p>Cancer happens when cells keep growing and dividing when they should stop.</p>
+  <p><b>Leukemia</b> is cancer in the bone marrow. The marrow makes too many white blood cells that are not normal. These cells push out healthy blood cells. Then it is harder for the body to fight germs, carry oxygen, and stop bleeding. Leukemia is the most common cancer in children. Many children can be cured if it is found and treated early.</p>
+  <p><b>Treatments:</b> chemotherapy (medicine that kills cancer cells), radiation (strong rays that kill cancer cells), and stem cell transplants (healthy blood-making cells from a donor). A donor with a similar family background is more likely to match. Donors from all backgrounds are needed.</p>`,
+  fig:"marrow",
+  vocab:[["leukemia","loo-KEE-mee-uh","cancer that starts in the bone marrow"],["chemotherapy","KEE-moh-THAIR-uh-pee","medicine that kills cancer cells"]],
+  extra:null,
+  dari:[["سرطان","saratān","cancer"],["سرطان خون","saratān-e khun","blood cancer"]] },
+
+{ n:8, emoji:"🌙", q:"What if your red blood cells were shaped like a crescent moon?",
+  body:`<p><b>Sickle-cell anemia</b> is a condition that changes the shape of red blood cells. It starts with a change in a <b>gene</b> (an instruction in the body). This changes <b>hemoglobin</b>, the protein that carries oxygen. The hemoglobin can stick together and bend the cells into a crescent, or sickle, shape.</p>
+  <p>Sickle-shaped cells are stiff. They can get stuck in <b>capillaries</b> (tiny blood vessels) and cause pain. They live only <b>10–20 days</b>, instead of about 120 days.</p>
+  <p>People with one changed copy of the gene may have some protection against severe <b>malaria</b>. This may be one reason sickle-cell anemia is more common in parts of Africa, the Middle East, and India, where malaria is common.</p>`,
+  vocab:[["sickle","SIK-ul","a curved blade; its shape looks like a crescent"],["hemoglobin","HEE-muh-gloh-bin","the protein in red blood cells that carries oxygen"]],
+  extra:null,
+  ask:"Remember card 2 — why does shape matter so much for a red blood cell?",
+  dari:[["داس","dās","sickle"],["ملاریا","malāriyā","malaria"],["جن","jin","gene",true]] },
+
+{ n:9, emoji:"💧", q:"What happens if you drop a red blood cell into pure water?",
+  body:`<p><b>Osmosis</b> is when water passes through a cell's membrane (its thin outer layer). Water moves from the side with less salt to the side with more salt.</p>
+  <ul><li><b>Pure water:</b> water moves <b>into</b> the cell. The cell swells and may <b>burst</b> 💥</li>
+  <li><b>Very salty water:</b> water moves <b>out</b> of the cell. The cell <b>shrinks</b> like a dried grape.</li>
+  <li><b>0.9% salt water:</b> water moves in and out at the same rate, so the cell stays <b>normal</b> ✅</li></ul>
+  <p>That’s why hospital drips use <b>normal saline</b> (water with 0.9% salt), not plain water.</p>`,
+  fig:"osmosis",
+  vocab:[["osmosis","oz-MOH-sis","water moving through a cell's thin outer layer"],["concentration","kon-sen-TRAY-shun","how much salt is mixed into the water"]],
+  extra:null,
+  ask:"Why do dried grapes get bigger when you soak them in water?",
+  dari:[["نمک","namak","salt"],["آب","āb","water"],["غلظت","ghilzat","concentration",true]] },
+
+];
+
+/* =====================================================================
+   APP
+   ===================================================================== */
+CARDS.sort((a,b)=>a.n-b.n);
+const STORE_KEY="bloodCards.read.v6";
+let readSet=new Set();
+try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||"[]"); if(Array.isArray(s)) readSet=new Set(s); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify([...readSet])); }catch(e){} }
+
+const grid=document.getElementById("grid"), overlay=document.getElementById("overlay"),
+      flip=document.getElementById("flip"), ovFront=document.getElementById("ovFront"),
+      ovBack=document.getElementById("ovBack");
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let openCard=null, openedAt=0;
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderGrid(){
+  grid.innerHTML=CARDS.map(c=>`
+    <button class="tile${readSet.has(c.n)?" read":""}" data-n="${c.n}" type="button"
+      aria-label="Card ${c.n}${readSet.has(c.n)?", already read":""}: ${esc(c.q)}">
+      <span class="tile-top"><span class="num">${c.n}</span><span class="emoji" aria-hidden="true">${c.emoji}</span></span>
+      <span class="q">${c.q}</span>
+    </button>`).join("");
+  updateProgress();
+}
+function updateProgress(){
+  const n=readSet.size;
+  document.getElementById("bagFill").style.width=(n/CARDS.length*100)+"%";
+  document.getElementById("progressText").textContent=`🩸 ${n} / ${CARDS.length} read`;
+}
+
+function imagesHTML(n){
+  const slots=IMAGE_SLOTS[n]||[];
+  return slots.map(s=>{
+    if(s.url){
+      const caption=s.credit?(/^https?:\/\//i.test(s.credit)?`<figcaption>Sourced from <a href="${esc(s.credit)}" target="_blank" rel="noopener noreferrer">${esc(s.credit)}</a></figcaption>`:`<figcaption>${esc(s.credit)}</figcaption>`):"";
+      return `<figure${s.large?' class="figure-large"':""}><img src="${esc(s.url)}" alt="${esc(s.need.replace(/^\(Optional\)\s*/,""))}" loading="lazy">${caption}</figure>`;
+    }
+    return (s.showPlaceholder??SHOW_EMPTY_IMAGE_SLOTS)?`<div class="img-slot">📷 <b>Image to add (card ${n}):</b><br>${esc(s.need)}</div>`:"";
+  }).join("");
+}
+
+function backHTML(c){
+  const fig=c.fig&&SVG[c.fig]?(c.fig==="team"?`<div style="margin:14px 0">${SVG.team()}</div>`:`<figure>${SVG[c.fig]()}</figure>`):"";
+  const vocab=c.vocab&&c.vocab.length?`<div class="box vocab"><h3>📖 Words</h3><dl>${c.vocab.map(v=>`<dt>${v[0]} <span class="pron">(${v[1]})</span></dt><dd>${v[2]}</dd>`).join("")}</dl></div>`:"";
+  const extra=c.extra?`<div class="box math"><h3>${c.extra.title}</h3><div>${c.extra.html}</div></div>`:"";
+  const ask=c.ask?`<div class="box ask"><h3>🙋 Ask the group</h3><div>${c.ask}</div></div>`:"";
+  const dari=c.dari&&c.dari.length?`<div class="box dari"><h3>🗣️ Dari</h3><ul>${c.dari.map(d=>`<li><span class="fa" lang="prs" dir="rtl">${d[0]}</span><span class="rom">${d[1]}</span><span class="en">= ${d[2]}</span>${d[3]?'<span class="check" title="Please check with students">check?</span>':""}</li>`).join("")}</ul></div>`:"";
+    return `<div class="back-head"><span class="num">${c.n}</span><span class="emoji" aria-hidden="true">${c.emoji}</span>
+      <div><h2>${c.q}</h2></div></div>
+    <div class="back-body">${c.body}${fig}${imagesHTML(c.n)}${vocab}${extra}${ask}${dari}</div>
+    <div class="back-foot">Tap anywhere to go back to the cards <strong>↩</strong></div>`;
+}
+
+function open(n){
+  const c=CARDS.find(x=>x.n===n); if(!c) return;
+  openCard=c; openedAt=Date.now();
+  ovFront.className="face front";
+  ovFront.innerHTML=`<span class="num">${c.n}</span><div class="emoji" aria-hidden="true">${c.emoji}</div><div class="q">${c.q}</div>`;
+  ovBack.innerHTML=backHTML(c);
+  ovBack.scrollTop=0;
+  flip.className="flip";
+  overlay.hidden=false;
+  document.body.style.overflow="hidden";
+  if(reduce){ flip.className="flip flipped settled"; ovBack.focus(); return; }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    setTimeout(()=>flip.classList.add("flipped"), 250);
+  }));
+}
+flip.addEventListener("transitionend",e=>{
+  if(e.target===flip && flip.classList.contains("flipped")){ flip.classList.add("settled"); ovBack.focus({preventScroll:true}); }
+});
+function close(){
+  if(!openCard) return;
+  const n=openCard.n;
+  readSet.add(n); save();
+  openCard=null;
+  overlay.hidden=true;
+  document.body.style.overflow="";
+  renderGrid();
+  const t=grid.querySelector(`[data-n="${n}"]`); if(t) t.focus({preventScroll:true});
+}
+
+grid.addEventListener("click",e=>{ const t=e.target.closest(".tile"); if(t) open(+t.dataset.n); });
+overlay.addEventListener("click",e=>{
+  if(e.target.closest("a")) return;              // links open without closing
+  if(Date.now()-openedAt<1100) return;            // ignore taps during the flip
+  close();
+});
+
+/* Keyboard */
+let numBuf="", numTimer=null;
+const toast=document.getElementById("toast");
+function showToast(t){ toast.textContent=t; toast.classList.add("show"); }
+function hideToast(){ toast.classList.remove("show"); }
+document.addEventListener("keydown",e=>{
+  if(openCard){
+    if(["Escape","Enter","Backspace","ArrowLeft","ArrowRight"].includes(e.key)){ e.preventDefault(); if(Date.now()-openedAt>400) close(); }
+    return;
+  }
+  if(/^[0-9]$/.test(e.key)){
+    numBuf+=e.key; showToast("Card "+numBuf+"…");
+    clearTimeout(numTimer);
+    const go=()=>{ const n=+numBuf; numBuf=""; hideToast(); if(n>=1&&n<=CARDS.length) open(n); };
+    if(numBuf.length>=2 || +numBuf>1) go(); else numTimer=setTimeout(go,700);
+    return;
+  }
+  if(e.key.startsWith("Arrow")){
+    const tiles=[...grid.querySelectorAll(".tile")], i=tiles.indexOf(document.activeElement);
+    if(i<0){ tiles[0].focus(); e.preventDefault(); return; }
+    const top=tiles[0].offsetTop; let cols=tiles.findIndex(t=>t.offsetTop!==top); if(cols<0) cols=tiles.length;
+    const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:cols,ArrowUp:-cols}[e.key];
+    const j=i+d; if(j>=0&&j<tiles.length){ tiles[j].focus(); e.preventDefault(); }
+  }
+});
+
+/* Reset (tap twice to confirm) */
+const resetBtn=document.getElementById("resetBtn"); let armed=null;
+resetBtn.addEventListener("click",()=>{
+  if(!armed){ resetBtn.classList.add("armed"); resetBtn.textContent="Tap again to clear all ✅ marks"; armed=setTimeout(()=>{armed=null;resetBtn.classList.remove("armed");resetBtn.textContent="↺ Reset for next class";},3000); return; }
+  clearTimeout(armed); armed=null; readSet.clear(); save(); renderGrid();
+  resetBtn.classList.remove("armed"); resetBtn.textContent="↺ Reset for next class";
+});
+
+renderGrid();
+</script>
+</body>
+</html>
