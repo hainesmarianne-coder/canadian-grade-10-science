@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chemistry Flip Deck</title>
+<!--
+  CHEMISTRY FOUNDATIONS FLIP DECK — SNC2D (Unit: Chemical Reactions)
+  60 shuffled flip cards. Front = category only. Back = one multiple-choice question.
+  Works fully offline: no internet, fonts or external files needed.
+
+  Curriculum links (Ontario SNC2D Strand C, plus assumed Grade 9 SNC1D knowledge):
+    Element Symbols   – SNC1D C3.5, C3.8 (first 20 elements + common symbols)
+    Chemistry Words   – SNC2D C2.1 (compound, reactant, product), C3.3 (evidence of change),
+                        C3.2 (conservation of mass); Word Bank Part 1 (SNC1D C3.3)
+    Counting Atoms    – SNC2D C3.1 (formula ↔ composition), C3.4
+    Balanced or Not?  – SNC2D C3.2, C3.4, C3.5
+    Common Molecules  – SNC1D C2.5, C3.8; SNC2D C1.1, C3.5, C3.8
+    Phases of Matter  – assumed knowledge (textbook Ch 17.1, Table 17.1); state symbols used in SNC2D C3.8
+    Models & Formulas – SNC2D C2.2 (molecular models), SNC1D C2.5; condensed formulas (CH₃CH₃) are a
+                        preview beyond SNC2D — recognition only
+
+  NOT YET COVERED (for future decks) — checked against the SNC2D curriculum, Unit 2 Review Test,
+  SNC2D-03 Practice Exam and Homework Guide (Nov 2026):
+    • Nomenclature + writing formulas: ionic (crossover method), molecular prefixes, polyatomic ions
+                              – SNC2D C3.1, C3.8 · HW U2L5–U2L8 · Practice Exam Unit 2 Q1–2
+    • Balancing equations     – SNC2D C3.2, C3.4 · HW U2L10–11 · Unit 2 Test (Thinking/Inquiry)
+    • Atomic structure in depth: subatomic particles, Bohr-Rutherford, valence electrons, ions
+                              – SNC1D C3.2, C3.5 (assumed) · HW U2L2 · Unit 2 Test Q1
+    • Atomic model history (Dalton → Bohr) – SNC1D C3.1 (assumed) · HW U2L2
+    • Periodic table patterns – SNC1D C3.6–C3.7 (assumed) · HW U2L3
+    • Ionic vs molecular compounds – SNC2D C3.8 · HW U2L5, U2L7 · Unit 2 Test Q2
+    • Reaction types: synthesis, decomposition, single/double displacement, combustion
+                              – SNC2D C2.3, C3.5 · HW U2L12–14 · Unit 2 Test (Communication)
+    • Word equations ↔ chemical equations – SNC2D C3.4 · Unit 2 Test (Communication)
+    • Acids & bases: properties, pH scale, indicators, neutralization, acids + metals → H₂
+                              – SNC2D C2.6, C3.6, C3.7 · HW U2L15–16 · Practice Exam Unit 2 Q3
+    • Reaction rates / collision theory (temperature, surface area, concentration, catalyst)
+                              – NOT a named SNC2D expectation, but on the Unit 2 Review Test (Application)
+    • Conservation of mass lab: why measured mass changes in an open container – SNC2D C2.4 · HW U2L10
+    • Tests for gases (glowing splint, burning splint "pop", limewater) – SNC1D C2.4 / SNC2D C2.5
+    • STSE: acid precipitation, WHMIS, neutralizing spills, liming lakes – SNC2D C1.1, C1.2
+  Only lightly touched here: evidence of chemical change (1 card), conservation of mass (1 card + balancing cards),
+  acids/bases (formula cards only).
+
+  HOW TO ADD A CARD → scroll to "CARDS" in the <script>. Copy one line and edit it.
+    The FIRST option in "o" is always the correct one (options are shuffled on screen).
+  HOW TO ADD A CATEGORY → add it to "CATS", then use its key in your cards.
+-->
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --paper:#ffffff; --ink:#111827; --muted:#4b5563;
+    --grey-box:#eef0f3; --ok:#15803d; --ok-bg:#dcfce7; --bad:#b91c1c; --bad-bg:#fee2e2;
+    --radius:20px; --cat:#1d4ed8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1000px 500px at 50% -150px,#334155 0%,var(--bg) 65%) var(--bg);
+    color:#fff; min-height:100vh;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:14px 16px 28px;display:flex;flex-direction:column;min-height:100vh}
+
+  header{text-align:center}
+  h1{font-size:clamp(1.5rem,5.5vw,2.2rem);margin:4px 0 2px}
+  .sub{color:#cbd5e1;font-size:clamp(.95rem,3.4vw,1.1rem);margin:0 0 12px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+  select,button{font:inherit}
+  select{
+    font-size:1.05rem;font-weight:700;padding:10px 12px;border-radius:12px;border:2px solid #64748b;
+    background:#fff;color:var(--ink);max-width:100%;
+  }
+  .btn{
+    font-size:1.05rem;font-weight:800;padding:10px 16px;border-radius:12px;border:2px solid #94a3b8;
+    background:transparent;color:#fff;cursor:pointer;
+  }
+  .btn:hover{background:rgba(255,255,255,.08)}
+  .btn:focus-visible,select:focus-visible{outline:4px solid #facc15;outline-offset:2px}
+  .counter{margin:12px 0 10px;text-align:center;font-weight:800;font-size:1.15rem}
+  .bar{height:10px;border-radius:5px;background:#334155;overflow:hidden;max-width:520px;margin:6px auto 0}
+  .bar-fill{height:100%;width:0;background:#facc15;transition:width .35s ease}
+
+  /* ---------- CARD ---------- */
+  .stage{flex:1;display:flex;perspective:1400px}
+  .card{
+    position:relative;width:100%;min-height:420px;border-radius:var(--radius);
+    transition:transform .22s ease-in;transform-style:preserve-3d;
+  }
+  .card.turn{transform:rotateY(90deg)}
+  .face{position:relative;border-radius:var(--radius);overflow:hidden}
+  .front{
+    min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:28px;cursor:pointer;border:none;width:100%;color:#fff;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--cat) 80%,#fff) 0%,var(--cat) 45%,color-mix(in srgb,var(--cat) 65%,#000) 100%);
+    box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.18);
+  }
+  .front:focus-visible{outline:4px solid #facc15;outline-offset:4px}
+  .front .emoji{font-size:clamp(5rem,22vw,8rem);line-height:1}
+  .front .cat{font-size:clamp(2.1rem,9vw,3.4rem);font-weight:900;margin:16px 0 10px;line-height:1.1}
+  .front .tap{font-size:1.15rem;font-weight:700;background:rgba(0,0,0,.25);padding:8px 16px;border-radius:999px}
+  .front .pattern{position:absolute;inset:0;opacity:.09;font-size:2.2rem;line-height:1.6;word-break:break-all;pointer-events:none;padding:8px}
+
+  .back{min-height:420px;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;
+    box-shadow:0 10px 30px rgba(0,0,0,.45)}
+  .back-head{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--cat);color:#fff;font-weight:800;font-size:1.1rem}
+  .back-head .emoji{font-size:1.6rem}
+  .back-body{padding:18px 18px 22px}
+  .q{font-size:clamp(1.35rem,5vw,1.75rem);font-weight:800;line-height:1.35;margin:2px 0 16px}
+  .opts{display:grid;gap:10px}
+  .opt{
+    display:flex;align-items:center;gap:12px;text-align:left;width:100%;cursor:pointer;
+    font-size:clamp(1.15rem,4.4vw,1.4rem);font-weight:650;line-height:1.3;color:var(--ink);
+    background:#f8fafc;border:3px solid #cbd5e1;border-radius:14px;padding:12px 14px;
+  }
+  .opt:hover:not(:disabled){border-color:var(--cat)}
+  .opt:focus-visible{outline:4px solid #facc15;outline-offset:2px}
+  .opt .L{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:var(--cat);color:#fff}
+  .opt:disabled{cursor:default}
+  .opt.right{background:var(--ok-bg);border-color:var(--ok)}
+  .opt.right .L{background:var(--ok)}
+  .opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+  .opt.wrong .L{background:var(--bad)}
+  .opt.dim{opacity:.5}
+  .why{margin-top:14px;border-radius:14px;padding:12px 14px;font-size:clamp(1.05rem,4vw,1.25rem);line-height:1.45}
+  .why.ok{background:var(--ok-bg);border-left:8px solid var(--ok)}
+  .why.no{background:var(--bad-bg);border-left:8px solid var(--bad)}
+  .why b{display:block;margin-bottom:2px}
+  .note{margin-top:14px;background:var(--grey-box);border-radius:12px;padding:10px 14px;color:var(--muted);font-size:clamp(.95rem,3.6vw,1.08rem);line-height:1.45}
+  .note::before{content:"📎 Good to know";display:block;font-weight:800;color:#374151;margin-bottom:2px}
+
+  .nav{display:flex;gap:12px;margin-top:14px}
+  .nav .btn{flex:1;font-size:1.2rem;padding:14px}
+  .nav .btn.primary{background:#facc15;color:#1f2937;border-color:#facc15}
+  .nav .btn:disabled{opacity:.35;cursor:default}
+  footer{text-align:center;color:#94a3b8;font-size:.95rem;margin-top:14px;line-height:1.5}
+  .pill{display:inline-block;background:#334155;color:#e2e8f0;border-radius:999px;padding:4px 12px;font-weight:700}
+
+  .opts.imgs{grid-template-columns:1fr 1fr}
+  .opts.imgs .opt{flex-direction:column;justify-content:center;padding:10px 6px;position:relative}
+  .opts.imgs .opt .L{position:absolute;top:8px;left:8px;width:34px;height:34px}
+  svg.mol{width:100%;max-width:190px;height:auto;display:block}
+  .qimg{background:#f8fafc;border:3px dashed #cbd5e1;border-radius:14px;padding:8px;margin:-4px 0 16px;display:flex;justify-content:center}
+  .qimg svg.mol{max-width:260px}
+
+  /* ---------- INTRO (soft background panel) ---------- */
+  .intro{max-width:620px;margin:0 auto 12px;text-align:left;background:rgba(148,163,184,.10);border:1px solid rgba(148,163,184,.25);
+    border-radius:16px;padding:4px 16px;color:#cbd5e1;font-size:clamp(.98rem,3.6vw,1.08rem);line-height:1.5}
+  .intro summary{cursor:pointer;font-weight:800;color:#e2e8f0;padding:8px 0;list-style:none}
+  .intro summary::-webkit-details-marker{display:none}
+  .intro summary::after{content:" ▾";color:#94a3b8}
+  .intro[open] summary::after{content:" ▴"}
+  .intro p{margin:0 0 10px}
+  .intro b{color:#fde68a}
+  .intro ul.todo{margin:0 0 12px;padding-left:1.3em}
+  .intro ul.todo li{margin:2px 0}
+
+  @media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧪 Chemistry Flip Deck</h1>
+    <p class="sub">Tap the card → answer the question → next card!</p>
+    <details class="intro" id="intro" open>
+      <summary>💬 What are these cards for?</summary>
+      <p>These cards practise the <b>building blocks of chemistry</b>: element symbols, key words, counting atoms, common molecules, molecular models and phases of matter. You need all of these to do <b>naming compounds</b> and <b>balancing equations</b>, which are coming next.</p>
+      <p>The cards are shuffled, so you never know what is next! Use the menu to practise <b>one category</b> if it feels hard. Mistakes are good — they show us what to practise.</p>
+      <p><b>In this deck:</b> element symbols · key words · physical &amp; chemical change · counting atoms · common molecules · molecular models · phases of matter.</p>
+      <p style="margin-bottom:4px"><b>NOT in this deck yet</b> — you still need these for tests and the exam. We will practise them later:</p>
+      <ul class="todo">
+        <li>Naming compounds &amp; writing their formulas (ionic, molecular, polyatomic ions)</li>
+        <li>Balancing chemical equations</li>
+        <li>Atoms in detail: protons, neutrons, electrons, Bohr-Rutherford diagrams, valence electrons, ions</li>
+        <li>Periodic table patterns (groups, periods, metals &amp; non-metals)</li>
+        <li>Ionic vs molecular compounds</li>
+        <li>Types of reactions: synthesis, decomposition, single &amp; double displacement, combustion</li>
+        <li>Acids &amp; bases: the pH scale, indicators, neutralization</li>
+        <li>What makes reactions faster (collision theory)</li>
+        <li>Chemistry, safety &amp; the environment (e.g., acid rain, WHMIS safety symbols)</li>
+      </ul>
+      <p>💌 <b>Have an idea?</b> If something is confusing, or you want a card on a topic that would help you, email me. Your ideas make this deck better!</p>
+    </details>
+    <div class="controls">
+      <label for="filter" style="position:absolute;left:-9999px">Choose a category</label>
+      <select id="filter"></select>
+      <button class="btn" id="shuffle" type="button">🔀 Shuffle</button>
+    </div>
+    <div class="counter"><span id="count">Card 1 of 60</span>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="card" id="card"></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <button class="btn primary" id="next" type="button">Next →</button>
+  </div>
+
+  <footer>
+    <span class="pill">✋ Practice only — NOT graded, NOT recorded, does NOT affect your mark</span><br>
+    Keys: ← → to move · Space to flip · 1 2 3 4 to answer
+  </footer>
+</div>
+
+<script>
+/* ================= CATEGORIES ================= */
+const CATS = {
+  sym:   {name:"Element Symbols",  emoji:"⚛️", color:"#1d4ed8"},
+  word:  {name:"Chemistry Words",  emoji:"📖", color:"#6d28d9"},
+  count: {name:"Counting Atoms",   emoji:"🔢", color:"#c2410c"},
+  bal:   {name:"Balanced or Not?", emoji:"⚖️", color:"#047857"},
+  mol:   {name:"Common Molecules", emoji:"🧪", color:"#be123c"},
+  phase: {name:"Phases of Matter", emoji:"🧊", color:"#0e7490"},
+  model: {name:"Models & Formulas", emoji:"🔴", color:"#a21caf"}
+};
+
+/* ================= BALL-AND-STICK PICTURES =================
+   Use "svg:NAME" as an option, or qimg:"NAME" under a question.
+   Colours follow the usual model-kit colours: C black, H white, O red, N blue. */
+const ATOM = {C:{r:18,f:"#1f2937",t:"#fff"},H:{r:11,f:"#ffffff",t:"#111"},O:{r:17,f:"#dc2626",t:"#fff"},N:{r:17,f:"#2563eb",t:"#fff"}};
+const MOLS = {
+  CH4: {a:[["C",80,60],["H",80,17],["H",123,60],["H",80,103],["H",37,60]], b:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]]},
+  NH3: {a:[["N",80,48],["H",38,86],["H",80,100],["H",122,86]], b:[[0,1,1],[0,2,1],[0,3,1]]},
+  H2O: {a:[["O",80,46],["H",40,84],["H",120,84]], b:[[0,1,1],[0,2,1]]},
+  CO2: {a:[["O",26,60],["C",80,60],["O",134,60]], b:[[0,1,2],[1,2,2]]},
+  O2:  {a:[["O",54,60],["O",106,60]], b:[[0,1,2]]},
+  N2:  {a:[["N",54,60],["N",106,60]], b:[[0,1,3]]},
+  C2H6:{a:[["C",58,60],["C",102,60],["H",58,19],["H",58,101],["H",17,60],["H",102,19],["H",102,101],["H",143,60]],
+        b:[[0,1,1],[0,2,1],[0,3,1],[0,4,1],[1,5,1],[1,6,1],[1,7,1]]}
+};
+function molSVG(name){
+  const m = MOLS[name]; if(!m) return "";
+  let s = `<svg viewBox="0 0 160 120" role="img" aria-label="ball-and-stick model" class="mol">`;
+  m.b.forEach(([p,q,n])=>{
+    const [,x1,y1]=m.a[p], [,x2,y2]=m.a[q];
+    const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ox=-dy/L, oy=dx/L, gap=n===1?0:(n===2?7:9);
+    const offs = n===1?[0]:n===2?[-gap/2,gap/2]:[-gap,0,gap];
+    offs.forEach(o=>{ s+=`<line x1="${x1+ox*o}" y1="${y1+oy*o}" x2="${x2+ox*o}" y2="${y2+oy*o}" stroke="#9ca3af" stroke-width="${n===1?7:4.5}" stroke-linecap="round"/>`; });
+  });
+  m.a.forEach(([el,x,y])=>{
+    const A=ATOM[el];
+    s+=`<circle cx="${x}" cy="${y}" r="${A.r}" fill="${A.f}" stroke="#374151" stroke-width="2.5"/>`;
+    s+=`<circle cx="${x-A.r*.35}" cy="${y-A.r*.35}" r="${A.r*.28}" fill="#fff" opacity="${el==="H"?0:.25}"/>`;
+  });
+  return s+`</svg>`;
+}
+
+/* ================= CARDS =================
+   c = category key · q = question · o = options (FIRST ONE IS CORRECT)
+   why = one-line reason · note = optional footnote (other names, pronunciation, extras) */
+const CARDS = [
+/* ---------- ELEMENT SYMBOLS (14) ---------- */
+{c:"sym", q:"Which element has the symbol Na?", o:["sodium","nitrogen","neon","nickel"],
+ why:"Na comes from the Latin name for sodium: natrium. Nitrogen is N and neon is Ne.",
+ note:"Some symbols come from old Latin names, so they don't match the English name."},
+{c:"sym", q:"What is the symbol for potassium?", o:["K","P","Po","Pt"],
+ why:"K comes from the Latin name kalium. P is phosphorus.",
+ note:"potassium = puh-TASS-ee-um"},
+{c:"sym", q:"What is the symbol for iron?", o:["Fe","Ir","I","In"],
+ why:"Fe comes from the Latin word ferrum. I is iodine.",
+ note:"Iron is element 26, so it is not in the first 20, but it appears in many exam reactions (e.g., iron + copper sulphate)."},
+{c:"sym", q:"Which element has the symbol Cu?", o:["copper","calcium","carbon","chlorine"],
+ why:"Cu comes from the Latin word cuprum. Calcium = Ca, carbon = C, chlorine = Cl.",
+ note:"Copper wires carry electricity in your home 🔌."},
+{c:"sym", q:"Which element has the symbol Ag?", o:["silver","gold","argon","aluminum"],
+ why:"Ag comes from the Latin word argentum (silver). Gold = Au, argon = Ar, aluminum = Al.",
+ note:"Silver jewellery is traditional in Afghanistan — think of a silver bracelet 💍."},
+{c:"sym", q:"Which element has the symbol Au?", o:["gold","silver","aluminum","argon"],
+ why:"Au comes from the Latin word aurum (gold). Trick: “Ay, you (Au) stole my gold!”",
+ note:"Gold is element 79."},
+{c:"sym", q:"Which element has the symbol Pb?", o:["lead","phosphorus","potassium","platinum"],
+ why:"Pb comes from the Latin word plumbum. Old water pipes were made of lead, so we say “plumber” today!",
+ note:"lead (the metal) = LED, not LEED."},
+{c:"sym", q:"Which element has the symbol Hg?", o:["mercury","hydrogen","helium","silver"],
+ why:"Hg comes from the Latin/Greek name hydrargyrum, meaning “water-silver”. Hydrogen = H, helium = He.",
+ note:"Mercury is a liquid metal at room temperature."},
+{c:"sym", q:"What is the symbol for magnesium?", o:["Mg","Mn","Ma","M"],
+ why:"Magnesium is Mg. Mn is a different element (manganese).",
+ note:"magnesium = mag-NEE-zee-um. It burns with a very bright white light."},
+{c:"sym", q:"Which is the correct way to write the symbol for chlorine?", o:["Cl","CL","cl","C"],
+ why:"The first letter is ALWAYS a capital and the second letter is ALWAYS small. C alone is carbon.",
+ note:"chlorine = KLOR-een"},
+{c:"sym", q:"What is the symbol for calcium?", o:["Ca","C","Co","K"],
+ why:"Calcium is Ca. C is carbon, Co is cobalt, K is potassium.",
+ note:"Calcium makes your bones and teeth strong 🦷."},
+{c:"sym", q:"What is the symbol for sulfur?", o:["S","Su","Sf","Si"],
+ why:"Sulfur is just S. Si is silicon (the element in sand and computer chips).",
+ note:"Also spelled “sulphur” in some Canadian books — both are correct."},
+{c:"sym", q:"Which element has the symbol Ne?", o:["neon","nitrogen","nickel","sodium"],
+ why:"Ne is neon, a noble gas. Nitrogen = N, nickel = Ni, sodium = Na.",
+ note:"Neon glows red-orange in bright shop signs."},
+{c:"sym", q:"Which of these elements is NOT one of the first 20 elements?", o:["iron (Fe)","argon (Ar)","calcium (Ca)","fluorine (F)"],
+ why:"Iron is element 26. Argon (18), calcium (20) and fluorine (9) are all in the first 20.",
+ note:"The first 20 end at calcium (Ca, element 20)."},
+
+/* ---------- CHEMISTRY WORDS (12) ---------- */
+{c:"word", q:"A pure substance made of only ONE kind of atom is called…", o:["an element","a compound","a mixture","a molecule"],
+ why:"An element has only one kind of atom (e.g., gold, oxygen). Elements are like the letters of the alphabet 🔤.",
+ note:"element = EL-uh-ment"},
+{c:"word", q:"Water (H₂O) is a compound because…", o:["it has two or more different elements chemically joined","it is a liquid","it can be separated by filtering","it has only one kind of atom"],
+ why:"A compound = different elements chemically joined, always in the same recipe. H₂O has hydrogen + oxygen.",
+ note:"compound = KOM-pownd. Letters (elements) join to make words (compounds)."},
+{c:"word", q:"Salt mixed with sand is…", o:["a mixture","a compound","an element","a molecule"],
+ why:"They are NOT chemically joined, so you can separate them — like picking the raisins out of Kabuli pulao 🍚.",
+ note:"mixture = MIKS-cher"},
+{c:"word", q:"Oxygen gas, O₂, is…", o:["a molecule but NOT a compound","a compound","a mixture","a single atom"],
+ why:"O₂ has 2 atoms joined (a molecule), but only ONE element, so it is not a compound.",
+ note:"H₂O is a molecule AND a compound (two different elements)."},
+{c:"word", q:"In the equation C + O₂ → CO₂, the REACTANTS are…", o:["C and O₂","CO₂","only C","the arrow"],
+ why:"Reactants are the starting substances. They are written BEFORE (left of) the arrow.",
+ note:"reactant = ree-AK-tunt (it “reacts”)"},
+{c:"word", q:"In the equation 2H₂ + O₂ → 2H₂O, the PRODUCT is…", o:["H₂O","H₂","O₂","H₂ and O₂"],
+ why:"Products are the new substances made. They are written AFTER (right of) the arrow.",
+ note:"product = PROD-ukt (it is “produced”)"},
+{c:"word", q:"In a chemical equation, the arrow (→) means…", o:["“produces” or “makes”","“equals”","“is mixed with”","“is added to”"],
+ why:"Read the arrow as “produces”: reactants → products. The + sign means “and”.",
+ note:"Common mistake: the arrow is NOT an equals sign."},
+{c:"word", q:"What is the best definition of a PHYSICAL change?", o:["a change in state, shape or size — NO new substance is made","a change that makes one or more new substances","a change where atoms are destroyed","a change that only happens when something burns"],
+ why:"In a physical change the substance stays the SAME substance. Melted ice is still H₂O; cut paper is still paper.",
+ note:"physical change = FIZ-ih-kul CHAYNJ. Textbook (Ch 17): a physical change does not change the identity of a substance. Examples: melting, freezing, boiling, dissolving, cutting, crushing."},
+{c:"word", q:"What is the best definition of a CHEMICAL change?", o:["atoms rearrange to make one or more NEW substances, with new properties","a change of state, like melting or boiling","a change in shape or size only","a change where atoms disappear, so mass is lost"],
+ why:"In a chemical change (a chemical reaction), the atoms rearrange into new substances. The atoms are not lost — just rearranged.",
+ note:"chemical change = KEM-ih-kul CHAYNJ. Same idea as a chemical reaction (ree-AK-shun). Examples: burning, rusting, cooking, baking bread 🍞."},
+{c:"word", q:"Which one is a CHEMICAL change?", o:["wood burning","ice melting","sugar dissolving in tea","cutting paper"],
+ why:"Burning makes NEW substances (ash, CO₂, water). The others only change shape or state.",
+ note:"Chemical change = new substance. Physical change = same substance."},
+{c:"word", q:"Which one is a PHYSICAL change?", o:["water boiling","iron rusting","bread baking","magnesium burning"],
+ why:"Boiling water is still H₂O — just a gas now. Rusting, baking and burning all make new substances.",
+ note:"physical = FIZ-ih-kul"},
+{c:"word", q:"Which is evidence (a sign) of a CHEMICAL change?", o:["bubbles of a new gas form when two liquids are mixed","ice melts","a glass breaks","salt dissolves in water"],
+ why:"Signs of chemical change: a new gas, a colour change, a new smell, a solid (precipitate) forming, or heat/light released.",
+ note:"evidence = EV-ih-dunss (proof). precipitate = prih-SIP-ih-tayt (a solid that appears in a liquid)."},
+{c:"word", q:"10 g of reactants react in a closed container. What is the mass of the products?", o:["10 g","less than 10 g","more than 10 g","0 g"],
+ why:"Law of conservation of mass: atoms are not created or destroyed, only rearranged. Mass stays the same.",
+ note:"conservation = kon-ser-VAY-shun (keeping something the same). This is WHY we balance equations!"},
+{c:"word", q:"The atomic number of an element tells you the number of…", o:["protons","neutrons","protons + neutrons","molecules"],
+ why:"Atomic number = protons. Mass number = protons + neutrons.",
+ note:"Carbon's atomic number is 6, so every carbon atom has 6 protons."},
+
+/* ---------- COUNTING ATOMS (9) ---------- */
+{c:"count", q:"In H₂O, the small low number 2 is called a…", o:["subscript","coefficient","charge","mass number"],
+ why:"sub- = under, -script = writing → “written low”. It counts the atom just BEFORE it: 2 H.",
+ note:"subscript = SUB-skript"},
+{c:"count", q:"In 3H₂O, the big 3 in front is called a…", o:["coefficient","subscript","charge","atomic number"],
+ why:"A coefficient sits in FRONT and counts whole molecules: 3H₂O = 3 water molecules.",
+ note:"coefficient = koh-ih-FISH-unt. Think: 3 glasses of chai 🍵 — the 3 counts the glasses."},
+{c:"count", q:"How many atoms in total are in ONE CO₂ molecule?", o:["3","2","1","4"],
+ why:"CO₂ = 1 carbon + 2 oxygen = 3 atoms. No number after C means 1.",
+ note:"carbon dioxide: di- = 2 (two oxygens)"},
+{c:"count", q:"How many HYDROGEN atoms are in 3H₂O?", o:["6","5","2","3"],
+ why:"3 molecules × 2 H each = 6 H. Multiply — don't add (3 + 2 = 5 is the common mistake!).",
+ note:"Coefficient × subscript = number of atoms."},
+{c:"count", q:"How many OXYGEN atoms are in 2CO₂?", o:["4","2","3","5"],
+ why:"2 molecules × 2 O each = 4 O.",
+ note:"And carbon? 2 × 1 = 2 C."},
+{c:"count", q:"How many MOLECULES are in 4NH₃?", o:["4","3","12","7"],
+ why:"The coefficient counts molecules: 4. (12 is the number of hydrogen ATOMS: 4 × 3.)",
+ note:"NH₃ = ammonia"},
+{c:"count", q:"How many atoms of each element are in H₂SO₄?", o:["H = 2, S = 1, O = 4","H = 2, S = 4, O = 1","H = 2, S = 0, O = 4","H = 1, S = 1, O = 4"],
+ why:"Each subscript belongs to the element just before it. S has no number, so S = 1.",
+ note:"H₂SO₄ = sulfuric acid (SUL-fyoor-ik)"},
+{c:"count", q:"How many HYDROGEN atoms are in Ca(OH)₂?", o:["2","1","3","4"],
+ why:"A subscript AFTER brackets multiplies everything INSIDE: (OH)₂ = 2 O + 2 H.",
+ note:"Ca(OH)₂ = calcium hydroxide (hy-DROK-side). OH is a polyatomic ion: poly- = many."},
+{c:"count", q:"In 2H₂ + O₂ → 2H₂O, how many OXYGEN atoms are on the PRODUCT side?", o:["2","1","4","3"],
+ why:"Product side = 2H₂O → 2 × 1 O = 2 O. The reactant side also has 2 O (in O₂). ✔",
+ note:"Hydrogen: 4 on each side (2 × 2)."},
+
+/* ---------- BALANCED OR NOT? (4) ---------- */
+{c:"bal", q:"Is this equation balanced?\nH₂ + O₂ → H₂O", o:["No — oxygen is not balanced","Yes — it is balanced","No — hydrogen is not balanced","No — neither is balanced"],
+ why:"Left: 2 H, 2 O. Right: 2 H, 1 O. Hydrogen matches, but oxygen does not.",
+ note:"Balanced version: 2H₂ + O₂ → 2H₂O"},
+{c:"bal", q:"Is this equation balanced?\nCH₄ + 2O₂ → CO₂ + 2H₂O", o:["Yes — it is balanced","No — oxygen is not balanced","No — hydrogen is not balanced","No — carbon is not balanced"],
+ why:"C: 1 = 1. H: 4 = 4 (2 × 2). O: 4 on the left (2 × 2) = 2 + 2 on the right. ✔",
+ note:"This is methane burning — natural gas for cooking 🔥 (a fossil fuel reaction)."},
+{c:"bal", q:"Is this equation balanced?\nN₂ + H₂ → 2NH₃", o:["No — hydrogen is not balanced","Yes — it is balanced","No — nitrogen is not balanced","No — neither is balanced"],
+ why:"N: 2 = 2 (2 × 1). H: 2 on the left, but 6 on the right (2 × 3).",
+ note:"Balanced version: N₂ + 3H₂ → 2NH₃ (making ammonia for fertilizer 🌾)."},
+{c:"bal", q:"Is this equation balanced?\nFe + CuSO₄ → FeSO₄ + Cu", o:["Yes — it is balanced","No — copper is not balanced","No — oxygen is not balanced","No — iron is not balanced"],
+ why:"Fe 1 = 1, Cu 1 = 1, S 1 = 1, O 4 = 4. Every atom is counted on both sides. ✔",
+ note:"Iron + copper sulphate: a displacement reaction from the curriculum. The iron nail turns copper-coloured!"},
+
+/* ---------- COMMON MOLECULES (13) ---------- */
+{c:"mol", q:"Which element exists in nature as a diatomic molecule (two atoms joined, X₂)?", o:["oxygen","helium","carbon","sodium"],
+ why:"Oxygen is O₂. The 7 diatomic elements: H₂ N₂ O₂ F₂ Cl₂ Br₂ I₂.",
+ note:"diatomic = dy-uh-TOM-ik (di- = 2). Memory trick: “HOFBrINCl” (say HOF-brinkle)."},
+{c:"mol", q:"Which list contains ONLY diatomic elements?", o:["hydrogen, nitrogen, chlorine","oxygen, helium, nitrogen","hydrogen, sodium, fluorine","carbon, oxygen, iodine"],
+ why:"H₂, N₂ and Cl₂ are all diatomic. Helium, sodium and carbon are not.",
+ note:"HOFBrINCl: Hydrogen, Oxygen, Fluorine, Bromine, Iodine, Nitrogen, Chlorine."},
+{c:"mol", q:"Nitrogen gas in the air is written as…", o:["N₂","N","N₃","NO"],
+ why:"Nitrogen is diatomic, so it is always N₂ as a gas. About 78% of air is N₂.",
+ note:"Proper chemical name: dinitrogen (dy-NY-truh-jen). di- = 2."},
+{c:"mol", q:"What is the formula for methane (natural gas used for cooking)?", o:["CH₄","C₄H","NH₃","CO₂"],
+ why:"Methane = 1 carbon + 4 hydrogen = CH₄. The subscript goes AFTER the atom it counts.",
+ note:"methane = METH-ayn. It is the main fuel in gas stoves 🔥."},
+{c:"mol", q:"What is the name of CO₂?", o:["carbon dioxide","carbon monoxide","calcium oxide","copper oxide"],
+ why:"di- = 2, so carbon DIoxide has 2 oxygens. We breathe it out and plants take it in 🌱.",
+ note:"CO = carbon MONoxide (mono- = 1): a deadly gas from a stove or bukhari in a closed room. Always let air in!"},
+{c:"mol", q:"What is NH₃?", o:["ammonia","nitrogen gas","nitric acid","hydrogen gas"],
+ why:"NH₃ = 1 nitrogen + 3 hydrogen = ammonia. It has a strong smell (in some cleaning products).",
+ note:"⚠️ Never mix ammonia with bleach — the reaction makes toxic chlorine gas."},
+{c:"mol", q:"What is H₂O₂?", o:["hydrogen peroxide","water","hydrogen gas","ozone"],
+ why:"H₂O₂ has 2 O, but water (H₂O) has only 1. Hydrogen peroxide breaks down into water + oxygen.",
+ note:"peroxide = per-OK-side. Used to clean cuts. 2H₂O₂ → 2H₂O + O₂"},
+{c:"mol", q:"What is the formula for table salt (sodium chloride)?", o:["NaCl","NaCl₂","SCl","KCl"],
+ why:"Na (sodium) + Cl (chlorine) = NaCl. KCl is potassium chloride (a different salt).",
+ note:"NaCl is an ionic compound. It is a solid at room temperature."},
+{c:"mol", q:"What is the formula for hydrochloric acid?", o:["HCl(aq)","H₂SO₄(aq)","NaOH(aq)","H₂O(l)"],
+ why:"Hydrochloric acid = H + Cl dissolved in water. H₂SO₄ is sulfuric acid; NaOH is a base.",
+ note:"hydrochloric = hy-dro-KLOR-ik. Your stomach uses it to digest food!"},
+{c:"mol", q:"NaOH (sodium hydroxide) is…", o:["a base","an acid","an element","a diatomic molecule"],
+ why:"The OH (hydroxide) part tells you it is a base. Acids usually start with H (HCl, H₂SO₄).",
+ note:"Acid + base → salt + water (neutralization). NaOH is used to make soap 🧼."},
+{c:"mol", q:"Calcium carbonate, CaCO₃, is found in…", o:["limestone and chalk","table salt","natural gas","the air we breathe"],
+ why:"CaCO₃ is the main compound in limestone, chalk and eggshells.",
+ note:"carbonate = KAR-buh-nayt. Lime is added to acid lakes to neutralize them."},
+{c:"mol", q:"When magnesium burns in oxygen, what is the product?", o:["MgO (magnesium oxide)","Mg₂","MgO₂","CO₂"],
+ why:"Magnesium + oxygen → magnesium oxide. Two elements join = a synthesis reaction.",
+ note:"Balanced: 2Mg + O₂ → 2MgO. Oxide = oxygen joined to another element."},
+{c:"mol", q:"Glucose, the sugar plants make in photosynthesis, has the formula…", o:["C₆H₁₂O₆","CO₂","CH₄","C₁₂H₆O"],
+ why:"C₆H₁₂O₆ = 6 carbon, 12 hydrogen, 6 oxygen. Plants make it from CO₂ + H₂O using sunlight ☀️.",
+ note:"glucose = GLOO-kose. You met it in Biology: cells use it for energy."},
+
+/* ---------- PHASES OF MATTER (8) ---------- */
+{c:"phase", q:"A SOLID changing into a LIQUID is called…", o:["melting","freezing","condensation","evaporation"],
+ why:"Melting: solid → liquid (ice → water). Freezing is the opposite: liquid → solid.",
+ note:"Snow on the mountains melts in spring and fills the rivers 🏔️."},
+{c:"phase", q:"A GAS changing into a LIQUID is called…", o:["condensation","evaporation","freezing","sublimation"],
+ why:"Condensation: gas → liquid. Like water drops on the lid of a hot teapot 🫖.",
+ note:"condensation = kon-den-SAY-shun. The opposite is evaporation / boiling (liquid → gas)."},
+{c:"phase", q:"A SOLID changing straight into a GAS (skipping liquid) is called…", o:["sublimation","melting","condensation","boiling"],
+ why:"Sublimation: solid → gas directly. Example: dry ice (solid CO₂) turns into a gas.",
+ note:"sublimation = sub-lih-MAY-shun. The reverse (gas → solid) is deposition, like frost on a window."},
+{c:"phase", q:"At room temperature (about 20 °C), oxygen (O₂) is a…", o:["gas","liquid","solid","solution"],
+ why:"Oxygen boils at −183 °C, so at 20 °C it is far above its boiling point: a gas.",
+ note:"Only 2 elements are liquids at room temperature: mercury (Hg) and bromine (Br₂)."},
+{c:"phase", q:"Water freezes at 0 °C. What is its MELTING point?", o:["0 °C","100 °C","−10 °C","10 °C"],
+ why:"The melting point and freezing point are the SAME temperature — just going in opposite directions.",
+ note:"100 °C is water's boiling point (and condensation point)."},
+{c:"phase", q:"Water melts at 0 °C and boils at 100 °C. At −10 °C, water is a…", o:["solid","liquid","gas","solution"],
+ why:"−10 °C is BELOW the melting point, so water is solid ice 🧊.",
+ note:"Below melting point → solid. Between melting and boiling point → liquid. Above boiling point → gas."},
+{c:"phase", q:"Oxygen melts at −219 °C and boils at −183 °C. At −200 °C, oxygen is a…", o:["liquid","solid","gas","solution"],
+ why:"−200 °C is BETWEEN the melting point (−219) and the boiling point (−183), so it is a liquid.",
+ note:"Careful with negative numbers: −200 is colder than −183 but warmer than −219. (Textbook Table 17.1)"},
+{c:"phase", q:"In HCl(aq), what does (aq) mean?", o:["dissolved in water","a gas","a solid","a pure liquid"],
+ why:"(aq) = aqueous: dissolved in water. From the Latin aqua = water 💧.",
+ note:"State symbols: (s) solid · (l) liquid · (g) gas · (aq) aqueous (AY-kwee-us). E.g., 2H₂(g) + O₂(g) → 2H₂O(l)"},
+
+/* ---------- MODELS & FORMULAS (10) ---------- */
+{c:"model", q:"In a ball-and-stick model, what do the STICKS show?", o:["the chemical bonds holding atoms together","the atoms","the protons","empty space"],
+ why:"Balls = atoms. Sticks = bonds (the links between atoms). Like beads 📿 joined by thread.",
+ note:"Colour key used in model kits: ⚫ carbon · ⚪ hydrogen · 🔴 oxygen · 🔵 nitrogen · 🟢 chlorine"},
+{c:"model", q:"In ball-and-stick models, a BLACK ball usually stands for…", o:["carbon","hydrogen","oxygen","nitrogen"],
+ why:"Model kits use the same colours everywhere: black = carbon (like charcoal/coal).",
+ note:"⚫ C · ⚪ H · 🔴 O · 🔵 N · 🟢 Cl"},
+{c:"model", q:"Which ball-and-stick model is METHANE, CH₄?", o:["svg:CH4","svg:NH3","svg:H2O","svg:CO2"],
+ why:"CH₄ = 1 black carbon in the middle with 4 white hydrogens around it.",
+ note:"⚫ C · ⚪ H · 🔴 O · 🔵 N. Real methane is 3-D (a tetrahedron, like a tripod with one leg up)."},
+{c:"model", q:"Which ball-and-stick model is WATER, H₂O?", o:["svg:H2O","svg:CO2","svg:NH3","svg:O2"],
+ why:"H₂O = 1 red oxygen + 2 white hydrogens, in a bent shape (like a “V”).",
+ note:"⚫ C · ⚪ H · 🔴 O · 🔵 N"},
+{c:"model", q:"Which ball-and-stick model is CARBON DIOXIDE, CO₂?", o:["svg:CO2","svg:H2O","svg:O2","svg:CH4"],
+ why:"CO₂ = black carbon in the middle, a red oxygen on each side, in a straight line. Two sticks = a double bond.",
+ note:"⚫ C · ⚪ H · 🔴 O · 🔵 N"},
+{c:"model", q:"Which ball-and-stick model is AMMONIA, NH₃?", o:["svg:NH3","svg:CH4","svg:H2O","svg:N2"],
+ why:"NH₃ = 1 blue nitrogen + 3 white hydrogens (a short pyramid shape).",
+ note:"⚫ C · ⚪ H · 🔴 O · 🔵 N. The model with 2 blue balls is N₂ (a triple bond)."},
+{c:"model", q:"This is a model of ethane, a hydrocarbon. What is its formula?", qimg:"C2H6", o:["C₂H₆","CH₄","C₂H₄","C₃H₈"],
+ why:"Count the balls: 2 black (C) and 6 white (H) → C₂H₆.",
+ note:"hydrocarbon = HY-dro-KAR-bun: a compound of only hydrogen + carbon (natural gas, petrol, propane)."},
+{c:"model", q:"What does a ball-and-stick model show that the formula CH₄ does NOT?", o:["which atoms are joined to which, and the shape","how many atoms there are","the mass of the molecule","the colour of the gas"],
+ why:"CH₄ only COUNTS atoms. The model also shows how they are connected and the shape of the molecule.",
+ note:"Both are correct ways to show methane — they just give different information."},
+{c:"model", q:"Ethane can be written C₂H₆ OR CH₃CH₃. What extra information does CH₃CH₃ give?", o:["how the atoms are grouped: each C has 3 H, and the two C atoms join","it has more atoms than C₂H₆","it is a different compound","nothing — it just looks different"],
+ why:"C₂H₆ (molecular formula) only counts atoms. CH₃CH₃ (condensed structural formula) also shows how they are connected.",
+ note:"Molecular formula: C₂H₆ · Condensed: CH₃CH₃ · Structural: draws every bond as a line, H–C–H. Structural formulas go further in Grade 11–12 — for now, just recognise them."},
+{c:"model", q:"Propane (fuel in gas cylinders) is written CH₃CH₂CH₃. What is its molecular formula?", o:["C₃H₈","C₃H₆","C₂H₈","CH₈"],
+ why:"Carbons: 1 + 1 + 1 = 3. Hydrogens: 3 + 2 + 3 = 8 → C₃H₈.",
+ note:"propane = PRO-payn. Same molecule, two ways to write it: C₃H₈ (counts) and CH₃CH₂CH₃ (shows the chain)."}
+];
+
+/* ================= APP ================= */
+const $ = id => document.getElementById(id);
+const card = $("card"), filter = $("filter");
+let deck = [], i = 0, flipped = false, answered = false, busy = false;
+
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;}
+function optHTML(t){ return t.startsWith("svg:") ? molSVG(t.slice(4)) : `<span>${esc(t)}</span>`; }
+function optText(t){ return t.startsWith("svg:") ? "the model shown in green" : t; }
+function esc(s){return String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));}
+
+function buildFilter(){
+  const counts = {};
+  CARDS.forEach(c=>counts[c.c]=(counts[c.c]||0)+1);
+  let html = `<option value="all">🎲 All categories (${CARDS.length})</option>`;
+  for(const k in CATS) if(counts[k]) html += `<option value="${k}">${CATS[k].emoji} ${CATS[k].name} (${counts[k]})</option>`;
+  filter.innerHTML = html;
+  try{ const saved = localStorage.getItem("chemDeckFilter"); if(saved && [...filter.options].some(o=>o.value===saved)) filter.value = saved; }catch(e){}
+}
+
+function newDeck(){
+  const f = filter.value;
+  const pool = CARDS.filter(c=>f==="all"||c.c===f);
+  deck = shuffle(pool).map(c=>{
+    const order = shuffle(c.o.map((t,idx)=>({t,correct:idx===0})));
+    return {...c, order};
+  });
+  i = 0; render(false);
+}
+
+function updateCounter(){
+  $("count").textContent = `Card ${i+1} of ${deck.length}`;
+  $("barFill").style.width = ((i+1)/deck.length*100)+"%";
+  $("prev").disabled = i===0;
+  $("next").textContent = i===deck.length-1 ? "🔀 Start again" : "Next →";
+}
+
+function render(showBack){
+  const c = deck[i], cat = CATS[c.c];
+  flipped = showBack; answered = false;
+  card.style.setProperty("--cat", cat.color);
+  document.documentElement.style.setProperty("--cat", cat.color);
+  if(!showBack){
+    card.innerHTML = `<button class="face front" id="front" type="button" aria-label="${esc(cat.name)} card. Tap to flip.">
+        <div class="pattern" aria-hidden="true">${(cat.emoji+" ").repeat(120)}</div>
+        <div class="emoji" aria-hidden="true">${cat.emoji}</div>
+        <div class="cat">${esc(cat.name)}</div>
+        <div class="tap">👆 Tap to flip</div>
+      </button>`;
+    $("front").addEventListener("click", flip);
+  } else {
+    const L = ["A","B","C","D","E","F"];
+    card.innerHTML = `<div class="face back">
+        <div class="back-head"><span class="emoji" aria-hidden="true">${cat.emoji}</span>${esc(cat.name)}</div>
+        <div class="back-body">
+          <div class="q">${esc(c.q).replace(/\n/g,"<br>")}</div>
+          ${c.qimg ? `<div class="qimg">${molSVG(c.qimg)}</div>` : ""}
+          <div class="opts${c.order.some(o=>o.t.startsWith("svg:"))?" imgs":""}">${c.order.map((o,k)=>`<button class="opt" type="button" data-k="${k}"><span class="L">${L[k]}</span>${optHTML(o.t)}</button>`).join("")}</div>
+          <div id="feedback"></div>
+        </div>
+      </div>`;
+    card.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>choose(+b.dataset.k)));
+  }
+  updateCounter();
+}
+
+function flip(){
+  if(busy || flipped) return;
+  busy = true;
+  card.classList.add("turn");
+  setTimeout(()=>{ render(true); card.classList.remove("turn"); setTimeout(()=>{busy=false; const f=card.querySelector(".opt"); if(f) f.focus({preventScroll:true});},230); },220);
+}
+
+function choose(k){
+  if(answered) return;
+  answered = true;
+  const c = deck[i], btns = card.querySelectorAll(".opt");
+  const right = c.order.findIndex(o=>o.correct);
+  btns.forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx===right) b.classList.add("right");
+    else if(idx===k) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  const ok = k===right;
+  const L = ["A","B","C","D","E","F"];
+  $("feedback").innerHTML =
+    `<div class="why ${ok?"ok":"no"}"><b>${ok?"✅ Correct!":"❌ Not quite — the answer is "+L[right]+": "+esc(optText(c.order[right].t))}</b>${esc(c.why)}</div>` +
+    (c.note ? `<div class="note">${esc(c.note)}</div>` : "");
+}
+
+function go(d){
+  if(busy) return;
+  if(d>0 && i===deck.length-1){ newDeck(); return; }
+  const n = i+d; if(n<0||n>=deck.length) return;
+  i = n; render(false); window.scrollTo({top:0});
+}
+
+$("next").addEventListener("click",()=>go(1));
+$("prev").addEventListener("click",()=>go(-1));
+$("shuffle").addEventListener("click",newDeck);
+filter.addEventListener("change",()=>{ try{localStorage.setItem("chemDeckFilter",filter.value);}catch(e){} newDeck(); });
+
+document.addEventListener("keydown",e=>{
+  if(e.target===filter) return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+  else if((e.key===" "||e.key==="Enter") && !flipped){e.preventDefault();flip();}
+  else if(flipped && !answered && /^[1-6]$/.test(e.key)){ const k=+e.key-1; if(k<deck[i].order.length) choose(k); }
+});
+
+const intro = $("intro");
+/* Intro starts open on big screens (screen-share) and folded on phones, unless the viewer chose otherwise */
+let introPref = null;
+try{ introPref = localStorage.getItem("chemDeckIntro"); }catch(e){}
+if(introPref==="closed" || (introPref===null && window.innerWidth < 600)) intro.open = false;
+intro.addEventListener("toggle",()=>{ try{localStorage.setItem("chemDeckIntro", intro.open?"open":"closed");}catch(e){} });
+
+buildFilter(); newDeck();
+</script>
+</body>
+</html>
