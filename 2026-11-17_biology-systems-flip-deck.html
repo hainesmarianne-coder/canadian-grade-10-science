@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organs &amp; Systems Flip Deck</title>
+<!--
+  ORGANS & SYSTEMS FLIP DECK — SNC2D Unit 1 (Biology: Tissues, Organs and Systems of Living Things)
+  68 shuffled flip cards. Front = category only. Back = one multiple-choice question.
+  13 cards are COMMAND-WORD cards (marked cmd:"…"): all four options are TRUE science, but only one
+  answers the command word. After answering, every option shows which command word it really answers.
+  Works fully offline: no internet, fonts or external files needed.
+
+  Curriculum links (Ontario SNC2D 2008, Strand B — Academic):
+    Levels of Life      – B3.1 (hierarchy: cells → tissues → organs → systems), B3.3 (animal tissue types)
+    Digestion           – B3.4, B2.1 (absorption) · HW U1L9 · Unit 1 Test (Thinking: "Detail the process…")
+    Heart & Blood       – B3.4, B2.1 (capillaries, red blood cells) · HW U1L10 · Practice Exam Unit 1 Q5
+    Breathing           – B3.4, B2.1 (diffusion, concentration) · HW U1L11 · Unit 1 Test (Application: "Outline…")
+    Muscles & Bones     – B3.4 · HW U1L13 · Unit 1 Test (aerobic vs anaerobic exercise)
+    Nerves              – B3.4 · HW U1L14
+    Plant Systems       – B3.5, B3.6, B2.1 (meristematic, mesophyll, phloem, stomate, xylem) · HW U1L15–16 ·
+                          Practice Exam Unit 1 Q3–4
+    Systems Teamwork    – B2.6, B3.4, B3.6 · textbook Table 8.1
+    Health & Disease    – B2.7, B1.2-style effects (smoking, UV) · Unit 1 Test ("explain two causes of lung cancer")
+    Dissection Lab      – B2.6 · HW U1L12 · textbook 8.2 (earthworm, frog)
+  Previews beyond SNC2D (recognition only, in footnotes): enzyme names (amylase), hemoglobin,
+  intercostal muscles, frog's 3-chambered heart.
+
+  NOT IN THIS DECK (still needed for tests and the exam):
+    • Cells & organelles, plant vs animal cells   – B2.3, B3.1 · HW U1L2 · Unit 1 Test Q1 + Q3 (label cell)
+    • Microscopes & biological drawings           – B2.2–B2.4 · HW U1L3
+    • Cell cycle, mitosis stages, chromosomes      – B2.2, B3.2 · HW U1L4–5 · Unit 1 Test Q2 + Comm Q2 ·
+                                                    Practice Exam Unit 1 Q2
+    • Cancer & the cell cycle (rate of division)   – B2.5, B3.2 · HW U1L6 · Unit 1 Test Comm Q1 (carcinogens: touched here)
+    • Specialized cells, stem cells, differentiation – B2.4, B3.3 · HW U1L7
+    • Medical imaging (X-ray, CT, MRI, ultrasound) – B1.2 · HW U1L1
+    • Ethics: stem cells, cloning, transplants     – B1.1
+
+  ANSWER-KEY ISSUES SPOTTED:
+    • Unit 1 Review Test – answer, Application Q1: "Diaphragm contracts to return to resting position"
+      during expiration → should be RELAXES (and moves up).
+    • SNC2D-03 Practice Exam – answer, Unit 1 Q3: "In what type of plant TISSUE does photosynthesis occur?
+      Answer: Chloroplast" → a chloroplast is an organelle; the tissue is the MESOPHYLL (leaf).
+
+  HOW TO ADD A CARD → scroll to "CARDS" in the <script>. Copy one line and edit it.
+    The FIRST option in "o" is always the correct one (options are shuffled on screen).
+    Command-word card: add cmd:"EXPLAIN" and tags:[…] — one command word per option, same order as "o".
+    Diagram: qimg:"digest:stomach" (kinds: digest, lungs, heart, leaf — see DIAGRAMS).
+  HOW TO ADD A CATEGORY → add it to "CATS", then use its key in your cards.
+-->
+<style>
+  :root{
+    --page:#eef3e8; --ink:#13261c; --muted:#4a5a50; --leaf:#2d6a4f; --leaf-d:#1b4332; --line:#c5d3bf;
+    --grey-box:#eef0ec; --ok:#15803d; --ok-bg:#dcfce7; --bad:#b91c1c; --bad-bg:#fee2e2;
+    --hi:#ffd60a; --radius:22px; --cat:#2d6a4f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--page); color:var(--ink); min-height:100vh;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:12px 16px 28px;display:flex;flex-direction:column;min-height:100vh}
+
+  header{text-align:center}
+  h1{font-size:clamp(1.5rem,5.5vw,2.2rem);margin:6px 0 4px;color:var(--leaf-d)}
+  .sub{color:var(--muted);font-size:clamp(.95rem,3.4vw,1.1rem);margin:0 0 12px;font-weight:600}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+  select,button{font:inherit}
+  select{
+    font-size:1.05rem;font-weight:700;padding:10px 12px;border-radius:12px;border:3px solid var(--leaf);
+    background:#fff;color:var(--ink);max-width:100%;
+  }
+  .btn{
+    font-size:1.05rem;font-weight:800;padding:10px 16px;border-radius:12px;border:3px solid var(--leaf);
+    background:#fff;color:var(--leaf-d);cursor:pointer;
+  }
+  .btn:hover{background:#e3ecdd}
+  .btn:focus-visible,select:focus-visible,.opt:focus-visible{outline:4px solid var(--ink);outline-offset:2px}
+  .counter{margin:12px 0 10px;text-align:center;font-weight:800;font-size:1.15rem}
+  .bar{height:12px;border-radius:6px;background:#d3dfcc;overflow:hidden;max-width:520px;margin:6px auto 0}
+  .bar-fill{height:100%;width:0;background:var(--leaf);transition:width .35s ease}
+
+  /* ---------- CARD ---------- */
+  .stage{flex:1;display:flex;perspective:1400px}
+  .card{position:relative;width:100%;min-height:420px;border-radius:var(--radius);
+    transition:transform .22s ease-in;transform-style:preserve-3d}
+  .card.turn{transform:rotateY(90deg)}
+  .face{position:relative;border-radius:var(--radius);overflow:hidden}
+  .front{
+    min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:28px;cursor:pointer;border:none;width:100%;color:#fff;background:var(--cat);
+  }
+  .front:focus-visible{outline:5px solid var(--hi);outline-offset:4px}
+  .front svg.cells{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .front > div{position:relative}
+  .front .emoji{font-size:clamp(5rem,22vw,8rem);line-height:1;background:rgba(255,255,255,.16);
+    border-radius:50%;width:1.55em;height:1.55em;display:grid;place-items:center}
+  .front .cat{font-size:clamp(2.1rem,9vw,3.4rem);font-weight:900;margin:16px 0 12px;line-height:1.1}
+  .front .tap{font-size:1.15rem;font-weight:800;background:#fff;color:var(--cat);padding:8px 18px;border-radius:999px}
+  .front .cmdbadge{margin-top:12px;font-size:1.05rem;font-weight:900;background:var(--hi);color:#1a1a1a;padding:6px 14px;border-radius:999px}
+
+  .back{min-height:420px;background:#fff;color:var(--ink);display:flex;flex-direction:column;border:3px solid var(--cat)}
+  .back-head{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--cat);color:#fff;font-weight:800;font-size:1.1rem}
+  .back-head .emoji{font-size:1.6rem}
+  .back-body{padding:18px 18px 22px}
+  .cmd{display:inline-block;background:var(--ink);color:var(--hi);font-weight:900;letter-spacing:.06em;
+    font-size:clamp(1.05rem,4vw,1.25rem);padding:6px 14px;border-radius:10px;margin-bottom:10px}
+  .q{font-size:clamp(1.35rem,5vw,1.75rem);font-weight:800;line-height:1.35;margin:2px 0 16px}
+  .opts{display:grid;gap:10px}
+  .opt{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;text-align:left;width:100%;cursor:pointer;
+    font-size:clamp(1.12rem,4.3vw,1.35rem);font-weight:650;line-height:1.3;color:var(--ink);
+    background:#fff;border:3px solid var(--line);border-radius:14px;padding:12px 14px;
+  }
+  .opt > span:not(.L):not(.tag){flex:1;min-width:0}
+  .opt:hover:not(:disabled){border-color:var(--cat);background:#f6f9f4}
+  .opt .L{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:var(--cat);color:#fff}
+  .opt:disabled{cursor:default}
+  .opt.right{background:var(--ok-bg);border-color:var(--ok)}
+  .opt.right .L{background:var(--ok)}
+  .opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+  .opt.wrong .L{background:var(--bad)}
+  .opt.dim{opacity:.6}
+  .tag{flex-basis:100%;margin-left:52px;font-size:.9rem;font-weight:800;color:#374151;letter-spacing:.03em}
+  .tag b{background:#e5e7eb;border-radius:6px;padding:2px 8px}
+  .opt.right .tag b{background:var(--ok);color:#fff}
+  .why{margin-top:14px;border-radius:14px;padding:12px 14px;font-size:clamp(1.05rem,4vw,1.25rem);line-height:1.45}
+  .why.ok{background:var(--ok-bg);border-left:8px solid var(--ok)}
+  .why.no{background:var(--bad-bg);border-left:8px solid var(--bad)}
+  .why b{display:block;margin-bottom:2px}
+  .note{margin-top:14px;background:var(--grey-box);border-radius:12px;padding:10px 14px;color:var(--muted);font-size:clamp(.95rem,3.6vw,1.08rem);line-height:1.45}
+  .note::before{content:"📎 Good to know";display:block;font-weight:800;color:#374151;margin-bottom:2px}
+  .qimg{background:#f6f9f4;border:3px dashed var(--line);border-radius:14px;padding:8px;margin:-4px 0 16px;display:flex;justify-content:center}
+  svg.dia{width:100%;max-width:280px;height:auto;display:block}
+
+  .nav{display:flex;gap:12px;margin-top:14px}
+  .nav .btn{flex:1;font-size:1.2rem;padding:14px}
+  .nav .btn.primary{background:var(--leaf);color:#fff;border-color:var(--leaf)}
+  .nav .btn.primary:hover{background:var(--leaf-d)}
+  .nav .btn:disabled{opacity:.35;cursor:default}
+  footer{text-align:center;color:var(--muted);font-size:.95rem;margin-top:14px;line-height:1.6}
+  .pill{display:inline-block;background:var(--leaf-d);color:#fff;border-radius:999px;padding:4px 12px;font-weight:700}
+
+  /* ---------- INTRO (flat white panel) ---------- */
+  .intro{max-width:620px;margin:0 auto 12px;text-align:left;background:#fff;border-left:8px solid var(--leaf);
+    border-radius:14px;padding:4px 16px;color:var(--ink);font-size:clamp(.98rem,3.6vw,1.08rem);line-height:1.5}
+  .intro summary{cursor:pointer;font-weight:800;color:var(--leaf-d);padding:8px 0;list-style:none}
+  .intro summary::-webkit-details-marker{display:none}
+  .intro summary::after{content:" ▾"}
+  .intro[open] summary::after{content:" ▴"}
+  .intro p{margin:0 0 10px}
+  .intro b{color:var(--leaf-d)}
+  .intro ul.todo{margin:0 0 12px;padding-left:1.3em}
+  .intro ul.todo li{margin:2px 0}
+  table.guide{width:100%;border-collapse:collapse;margin:4px 0 12px;font-size:.98rem}
+  table.guide th{background:var(--leaf);color:#fff;text-align:left;padding:6px 8px}
+  table.guide td{border-bottom:2px solid #e3ecdd;padding:6px 8px;vertical-align:top}
+  table.guide td:first-child{font-weight:900;white-space:nowrap}
+
+  @media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🫀 Organs &amp; Systems Flip Deck</h1>
+    <p class="sub">Tap the card → answer the question → next card!</p>
+    <details class="intro" id="intro" open>
+      <summary>💬 What are these cards for?</summary>
+      <p>These cards practise how your body (and a plant!) is <b>organized</b>: cells make tissues, tissues make organs, and organs work together in <b>systems</b>. You need this for the Unit 1 test and the exam.</p>
+      <p>The cards are shuffled, so you never know what is next! Use the menu to practise <b>one category</b> if it feels hard. Mistakes are good — they show us what to practise.</p>
+      <p><b>✍️ Command-word cards.</b> In tests, the first word of a question usually tells you <b>what kind of answer</b> to write. On these cards, ALL the answers are true science — but only ONE answers the command word. After you choose, each answer shows which command word it really answers.</p>
+      <table class="guide">
+        <tr><th>Command word</th><th>What it wants</th><th>Look for…</th></tr>
+        <tr><td>Define</td><td>the meaning of a word</td><td>“___ is …”</td></tr>
+        <tr><td>Identify</td><td>just the name — short</td><td>one word or a few words</td></tr>
+        <tr><td>List</td><td>several names, no details</td><td>a, b, c</td></tr>
+        <tr><td>Describe</td><td>what it is like or what happens</td><td>shape, size, colour, features</td></tr>
+        <tr><td>Outline</td><td>the main steps, in order</td><td>first → then → next (→)</td></tr>
+        <tr><td>Explain</td><td>the reason: how or why</td><td><b>because · so · this causes</b></td></tr>
+        <tr><td>Compare</td><td>how they are the same AND different</td><td><b>both … but · while</b></td></tr>
+      </table>
+      <p><b>In this deck:</b> levels of organization · digestive system · heart &amp; blood · breathing · muscles &amp; bones · nerves · plant systems · systems working together · health &amp; disease · dissection lab · command words.</p>
+      <p style="margin-bottom:4px"><b>NOT in this deck yet</b> — you still need these for tests and the exam. We will practise them later:</p>
+      <ul class="todo">
+        <li>Cells and organelles; plant vs animal cells</li>
+        <li>Microscopes and biological drawings</li>
+        <li>The cell cycle, mitosis stages and chromosomes</li>
+        <li>Cancer and how fast cells divide</li>
+        <li>Specialized cells and stem cells</li>
+        <li>Medical imaging: X-ray, CT, MRI, ultrasound</li>
+        <li>Ethics: stem cells, cloning, organ transplants</li>
+      </ul>
+      <p>💌 <b>Have an idea?</b> If something is confusing, or you want a card on a topic that would help you, message me. Your ideas make this deck better!</p>
+    </details>
+    <div class="controls">
+      <label for="filter" style="position:absolute;left:-9999px">Choose a category</label>
+      <select id="filter"></select>
+      <button class="btn" id="shuffle" type="button">🔀 Shuffle</button>
+    </div>
+    <div class="counter"><span id="count">Card 1</span>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="card" id="card"></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <button class="btn primary" id="next" type="button">Next →</button>
+  </div>
+
+  <footer>
+    <span class="pill">✋ Practice only — NOT graded, NOT recorded, does NOT affect your mark</span><br>
+    Keys: ← → to move · Space to flip · 1 2 3 4 to answer
+  </footer>
+</div>
+
+<script>
+/* ================= CATEGORIES ================= */
+const CATS = {
+  levels:  {name:"Levels of Life",   emoji:"🧩", color:"#5b3f8c"},
+  digest:  {name:"Digestion",        emoji:"🍽️", color:"#a8461a"},
+  heart:   {name:"Heart & Blood",    emoji:"❤️", color:"#b3202f"},
+  breathe: {name:"Breathing",        emoji:"🫁", color:"#1d6690"},
+  move:    {name:"Muscles & Bones",  emoji:"💪", color:"#6d4c41"},
+  nerve:   {name:"Nerves",           emoji:"🧠", color:"#4338ca"},
+  plant:   {name:"Plant Systems",    emoji:"🌱", color:"#2e7031"},
+  team:    {name:"Systems Teamwork", emoji:"🤝", color:"#00695c"},
+  health:  {name:"Health & Disease", emoji:"🩺", color:"#ad1457"},
+  lab:     {name:"Dissection Lab",   emoji:"🐸", color:"#4f6228"}
+};
+
+/* ================= DIAGRAMS (flat, offline SVG) =================
+   Use qimg:"KIND:PART". The PART is coloured yellow. Kinds and parts:
+   digest: mouth, eso, liver, stomach, small, large · lungs: trachea, bronchi, lung, diaphragm
+   heart: ra, la, rv, lv · leaf: epi, meso, vein, stoma */
+const HI = "#ffd60a", OUT = "#13261c";
+function f(part, hi, base){ return part===hi ? HI : base; }
+const DIAGRAMS = {
+  digest(h){
+    return `<svg class="dia" viewBox="0 0 200 250" role="img" aria-label="digestive system diagram, one organ coloured yellow">
+      <ellipse cx="100" cy="22" rx="20" ry="10" fill="${f("mouth",h,"#e8a0a0")}" stroke="${OUT}" stroke-width="3"/>
+      <rect x="94" y="32" width="12" height="56" rx="6" fill="${f("eso",h,"#f2b8a0")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M36 92 Q62 70 112 84 L108 114 Q70 124 38 110 Z" fill="${f("liver",h,"#8d3b2f")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M104 86 Q150 76 160 104 Q166 140 128 146 Q108 148 106 132 Q128 132 132 114 Q130 100 104 102 Z" fill="${f("stomach",h,"#e07a5f")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M72 226 L58 168 Q56 156 70 156 L136 156 Q150 156 150 170 L150 206 Q150 220 136 220 L106 222 L104 242" fill="none" stroke="${OUT}" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M72 226 L58 168 Q56 156 70 156 L136 156 Q150 156 150 170 L150 206 Q150 220 136 220 L106 222 L104 242" fill="none" stroke="${f("large",h,"#c08552")}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M112 150 C76 160 80 176 108 176 S140 186 108 190 S76 200 104 208" fill="none" stroke="${OUT}" stroke-width="13" stroke-linecap="round"/>
+      <path d="M112 150 C76 160 80 176 108 176 S140 186 108 190 S76 200 104 208" fill="none" stroke="${f("small",h,"#f4c38a")}" stroke-width="7" stroke-linecap="round"/>
+    </svg>`;
+  },
+  lungs(h){
+    return `<svg class="dia" viewBox="0 0 200 200" role="img" aria-label="respiratory system diagram, one part coloured yellow">
+      <path d="M88 72 Q42 58 32 118 Q28 160 60 164 Q86 166 88 140 Z" fill="${f("lung",h,"#f4a3a8")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M112 72 Q158 58 168 118 Q172 160 140 164 Q114 166 112 140 Z" fill="${f("lung",h,"#f4a3a8")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M100 62 L72 92 M100 62 L128 92" stroke="${OUT}" stroke-width="12" stroke-linecap="round"/>
+      <path d="M100 62 L72 92 M100 62 L128 92" stroke="${f("bronchi",h,"#cbd5e1")}" stroke-width="6" stroke-linecap="round"/>
+      <rect x="93" y="8" width="14" height="58" rx="6" fill="${f("trachea",h,"#cbd5e1")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M22 182 Q100 136 178 182" fill="none" stroke="${OUT}" stroke-width="12" stroke-linecap="round"/>
+      <path d="M22 182 Q100 136 178 182" fill="none" stroke="${f("diaphragm",h,"#b5651d")}" stroke-width="6" stroke-linecap="round"/>
+    </svg>`;
+  },
+  heart(h){
+    return `<svg class="dia" viewBox="0 0 200 190" role="img" aria-label="heart diagram with four chambers, one chamber coloured yellow">
+      <path d="M100 14 Q30 4 26 70 Q24 130 100 182 Q176 130 174 70 Q170 4 100 14 Z" fill="#b3202f" stroke="${OUT}" stroke-width="3"/>
+      <rect x="40" y="34" width="54" height="44" rx="12" fill="${f("ra",h,"#7fa7d9")}" stroke="${OUT}" stroke-width="3"/>
+      <rect x="106" y="34" width="54" height="44" rx="12" fill="${f("la",h,"#f19a9a")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M44 88 L94 88 L94 150 Q60 128 44 100 Z" fill="${f("rv",h,"#7fa7d9")}" stroke="${OUT}" stroke-width="3"/>
+      <path d="M114 88 L156 88 Q154 118 106 158 L106 98 Z" fill="${f("lv",h,"#f19a9a")}" stroke="${OUT}" stroke-width="3"/>
+    </svg>`;
+  },
+  leaf(h){
+    let s = `<svg class="dia" viewBox="0 0 230 150" role="img" aria-label="leaf cross-section diagram, one part coloured yellow">`;
+    const epi = f("epi",h,"#d8f3dc"), meso = f("meso",h,"#74c69d");
+    for(let x=6;x<224;x+=18) s+=`<rect x="${x}" y="8" width="18" height="16" fill="${epi}" stroke="${OUT}" stroke-width="2"/>`;
+    for(let x=8;x<220;x+=15) s+=`<rect x="${x}" y="28" width="12" height="42" rx="6" fill="${meso}" stroke="${OUT}" stroke-width="2"/><circle cx="${x+6}" cy="40" r="2.5" fill="#1b4332"/><circle cx="${x+6}" cy="56" r="2.5" fill="#1b4332"/>`;
+    [[20,88],[44,96],[66,84],[92,100],[118,86],[30,110],[58,112],[104,112]].forEach(([x,y])=>{
+      s+=`<circle cx="${x}" cy="${y}" r="11" fill="${meso}" stroke="${OUT}" stroke-width="2"/><circle cx="${x+3}" cy="${y-2}" r="2.5" fill="#1b4332"/>`;});
+    s+=`<circle cx="176" cy="98" r="24" fill="${f("vein",h,"#a3b18a")}" stroke="${OUT}" stroke-width="3"/>
+        <circle cx="168" cy="92" r="6" fill="#fff" stroke="${OUT}" stroke-width="2"/><circle cx="182" cy="90" r="6" fill="#fff" stroke="${OUT}" stroke-width="2"/><circle cx="176" cy="108" r="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>`;
+    for(let x=6;x<224;x+=18){ if(x===78||x===96||x===114) continue;
+      s+=`<rect x="${x}" y="126" width="18" height="16" fill="${epi}" stroke="${OUT}" stroke-width="2"/>`; }
+    const g = f("stoma",h,"#52b788");
+    s+=`<ellipse cx="92" cy="134" rx="13" ry="10" fill="${g}" stroke="${OUT}" stroke-width="2.5"/>
+        <ellipse cx="118" cy="134" rx="13" ry="10" fill="${g}" stroke="${OUT}" stroke-width="2.5"/>
+        <ellipse cx="105" cy="134" rx="3.5" ry="7" fill="${OUT}"/>`;
+    return s+`</svg>`;
+  }
+};
+function diagram(spec){ const [k,p]=spec.split(":"); return DIAGRAMS[k] ? DIAGRAMS[k](p) : ""; }
+
+/* ================= CARDS =================
+   c = category key · q = question · o = options (FIRST ONE IS CORRECT)
+   why = one-line reason · note = optional footnote (pronunciation, other names, extras)
+   cmd = command word (command-word cards only) · tags = which command word each option answers (same order as o)
+   qimg = diagram under the question */
+const CARDS = [
+/* ---------- LEVELS OF LIFE (5 + 2 command) ---------- */
+{c:"levels", q:"Which list goes from SIMPLEST to MOST COMPLEX?", o:["cell → tissue → organ → organ system → organism","cell → organ → tissue → organ system → organism","tissue → cell → organ → organism → organ system","organism → organ system → organ → tissue → cell"],
+ why:"Small to big: cells make tissues, tissues make organs, organs make systems, systems make a whole organism.",
+ note:"Think of a house 🏠: bricks (cells) → walls (tissues) → rooms (organs) → floors (systems) → the whole house (organism)."},
+{c:"levels", q:"Which one is an ORGAN?", o:["the stomach","blood","a red blood cell","the digestive system"],
+ why:"The stomach is made of several tissues working together. Blood is a tissue, a red blood cell is a cell, and the digestive system is an organ system.",
+ note:"organ = OR-gun. Blood is a connective tissue — a liquid one!"},
+{c:"levels", q:"A group of ORGANS working together is called…", o:["an organ system","a tissue","an organism","an organelle"],
+ why:"Organs work together in an organ system (e.g., mouth + stomach + intestines = digestive system).",
+ note:"organelle = or-guh-NELL: a tiny part INSIDE a cell (the -elle ending means “little”, so “little organ”)."},
+{c:"levels", q:"Which type of animal tissue COVERS and LINES the body (skin, inside of the stomach)?", o:["epithelial tissue","connective tissue","muscle tissue","nervous tissue"],
+ why:"Epithelial tissue makes coverings and linings. Connective tissue supports and joins; muscle contracts; nervous tissue sends signals.",
+ note:"epithelial = ep-ih-THEE-lee-ul. The 4 animal tissue types: epithelial, connective, muscle, nervous."},
+{c:"levels", q:"Bone, blood and fat are all examples of…", o:["connective tissue","epithelial tissue","muscle tissue","nervous tissue"],
+ why:"Connective tissue supports, protects and connects other parts of the body. They look very different, but they are all connective tissue.",
+ note:"connective = kuh-NEK-tiv (it “connects”)."},
+{c:"levels", cmd:"DEFINE", q:"Define “tissue”.", tags:["DEFINE","LIST","DESCRIBE","EXPLAIN"],
+ o:["A tissue is a group of similar cells that work together to do one job.","Epithelial, connective, muscle and nervous tissue.","Muscle tissue is made of long, thin cells that can get shorter.","Cells form tissues because many cells together can do a bigger job than one cell."],
+ why:"DEFINE = give the meaning of the word: “A tissue is…”. The others list types, describe one tissue, or give a reason.",
+ note:"✍️ Define → start with the word: “A tissue is …”. tissue = TISH-oo."},
+{c:"levels", cmd:"DEFINE", q:"Define “organ”.", tags:["DEFINE","LIST","EXPLAIN","DESCRIBE"],
+ o:["An organ is a body part made of different tissues that work together to do one main job.","The heart, stomach, lungs and brain.","We need organs because one tissue alone cannot do a big job like pumping blood.","The heart is a hollow, muscular organ about the size of your fist."],
+ why:"DEFINE = the meaning of the word itself. Giving examples is a LIST; the fist-size sentence DESCRIBES one organ.",
+ note:"✍️ Define → “An organ is …”. A good definition works for ALL organs, not just one."},
+
+/* ---------- DIGESTION (8 + 2 command) ---------- */
+{c:"digest", q:"Where does digestion BEGIN?", o:["in the mouth","in the stomach","in the small intestine","in the esophagus"],
+ why:"Chewing breaks food into pieces, and saliva starts breaking down starch — digestion starts in the mouth, not the stomach!",
+ note:"saliva = suh-LY-vuh. Preview: the enzyme in saliva is amylase (AM-ih-layz)."},
+{c:"digest", q:"Where are MOST nutrients absorbed into the blood?", o:["the small intestine","the large intestine","the stomach","the esophagus"],
+ why:"The small intestine is long and covered in villi, so it has a huge surface for absorbing nutrients. The large intestine mostly absorbs water.",
+ note:"absorption = ab-ZORP-shun. The small intestine is about 6–7 m long — longer than a minibus!"},
+{c:"digest", q:"What is the main job of the LARGE intestine?", o:["to absorb water and form solid waste","to absorb most of the nutrients","to make bile","to churn food with acid"],
+ why:"By the large intestine, most nutrients are gone. It takes back water and forms waste (feces).",
+ note:"It is called “large” because it is WIDER — the small intestine is much LONGER."},
+{c:"digest", q:"Peristalsis is…", o:["wave-like muscle squeezes that push food along","the liquid in your mouth","tiny fingers that absorb nutrients","an enzyme that breaks down fat"],
+ why:"Smooth muscle in the walls squeezes behind the food, like squeezing toothpaste out of a tube 🪥.",
+ note:"peristalsis = pair-ih-STAL-sis. It works even if you are upside down!"},
+{c:"digest", q:"CHEWING your food is an example of…", o:["mechanical digestion","chemical digestion","absorption","peristalsis"],
+ why:"Mechanical = breaking food into smaller PIECES (teeth, stomach churning). Chemical = enzymes and acid break the molecules themselves.",
+ note:"mechanical = meh-KAN-ih-kul. Saliva mixing in while you chew = chemical digestion starting at the same time."},
+{c:"digest", q:"Villi in the small intestine help because they…", o:["give a much bigger surface area for absorbing nutrients","make bile to break up fat","push food along with waves","store food until later"],
+ why:"Millions of tiny finger-shapes = a huge surface, so more nutrients pass into the blood at the same time.",
+ note:"villi = VIL-eye (one is a villus). Like the thick pile of an Afghan carpet: many tiny threads make a huge surface."},
+{c:"digest", q:"Which organ makes BILE, which breaks fat into small droplets?", o:["the liver","the pancreas","the stomach","the large intestine"],
+ why:"The liver makes bile; the gall bladder stores it. The pancreas makes many digestive enzymes (and insulin).",
+ note:"bile = BYLE · pancreas = PAN-kree-us. Food never goes INTO the liver or pancreas — they send juices into the small intestine."},
+{c:"digest", q:"Which organ is coloured yellow ⭐?", qimg:"digest:stomach", o:["the stomach","the liver","the small intestine","the large intestine"],
+ why:"The stomach is a J-shaped muscular bag at the bottom of the esophagus. It churns food with acid and enzymes.",
+ note:"stomach = STUM-uk. The big organ next to it (in brown) is the liver."},
+{c:"digest", cmd:"OUTLINE", q:"Outline the path of food through the digestive system.", tags:["OUTLINE","EXPLAIN","DEFINE","DESCRIBE"],
+ o:["Mouth → esophagus → stomach → small intestine → large intestine → anus.","Food must be broken down because big food molecules are too large to pass into the blood.","Digestion is breaking food down into small molecules that the body can use.","The stomach is a muscular bag that churns food with acid."],
+ why:"OUTLINE = the main steps IN ORDER, short. Arrows (→) are perfect for an outline.",
+ note:"✍️ Outline → first → then → next. If a test says “Detail”, give the same steps PLUS what happens at each one."},
+{c:"digest", cmd:"EXPLAIN", q:"Explain why the small intestine is good at absorbing nutrients.", tags:["EXPLAIN","DESCRIBE","DEFINE","LIST"],
+ o:["It is covered in millions of villi, which give it a huge surface area, so more nutrients can pass into the blood.","The small intestine is a long, thin, folded tube.","Absorption is when useful substances pass into the blood.","Villi, capillaries, enzymes."],
+ why:"EXPLAIN needs a reason — look for “so” or “because”. The tube sentence only DESCRIBES it; it doesn't say WHY.",
+ note:"✍️ Explain → feature + “so” + result. Villi feature → so → bigger surface → so → more absorption."},
+
+/* ---------- HEART & BLOOD (8 + 2 command) ---------- */
+{c:"heart", q:"ARTERIES carry blood…", o:["AWAY from the heart","back TO the heart","only to the lungs","only inside the heart"],
+ why:"Memory trick: A for Arteries, A for Away. Veins carry blood back to the heart.",
+ note:"artery = AR-ter-ee · vein = VAYN"},
+{c:"heart", q:"Capillaries are…", o:["the tiniest blood vessels, with walls only ONE cell thick","the biggest blood vessels","the chambers at the top of the heart","cells that carry oxygen"],
+ why:"Their walls are so thin that oxygen, nutrients and waste can pass through — this is where the exchange happens.",
+ note:"capillaries = KAP-ih-lair-eez. Like the narrow lanes of a bazaar: deliveries reach every single shop."},
+{c:"heart", q:"Which part of the blood carries OXYGEN around the body?", o:["red blood cells","white blood cells","platelets","plasma"],
+ why:"Red blood cells carry oxygen. White blood cells fight germs; platelets help clotting; plasma is the liquid.",
+ note:"Preview: the red protein that holds the oxygen is hemoglobin (HEE-moh-gloh-bin)."},
+{c:"heart", q:"Which part of the blood fights GERMS and infection?", o:["white blood cells","red blood cells","platelets","plasma"],
+ why:"White blood cells are the body's defenders 🛡️. Red blood cells carry oxygen.",
+ note:"Your white blood cell count goes UP when you are sick."},
+{c:"heart", q:"You cut your finger. What helps the blood CLOT (stop bleeding)?", o:["platelets","red blood cells","white blood cells","plasma"],
+ why:"Platelets are small cell pieces that stick together to plug the cut.",
+ note:"platelets = PLAYT-lets. Plasma (PLAZ-muh) is the yellow liquid part of blood — just over half of your blood."},
+{c:"heart", q:"How many CHAMBERS does the human heart have?", o:["4: two atria on top and two ventricles below","2: one atrium and one ventricle","3: two atria and one ventricle","4: all of them the same size"],
+ why:"Atria (top) RECEIVE blood. Ventricles (bottom) PUMP blood out. The ventricles have thicker walls.",
+ note:"atrium = AY-tree-um (plural atria) · ventricle = VEN-trih-kul"},
+{c:"heart", q:"This heart is drawn the normal textbook way — as if you are FACING the person. Which chamber is coloured yellow ⭐?", qimg:"heart:lv", o:["the left ventricle","the right ventricle","the left atrium","the right atrium"],
+ why:"Diagrams are drawn facing the person, so THEIR left is on YOUR right. Bottom + their left = left ventricle.",
+ note:"Common mistake: reading the diagram as if it were your own heart. Hold your right hand up to the screen to check!"},
+{c:"heart", q:"Which chamber has the THICKEST muscle wall?", o:["the left ventricle","the right ventricle","the left atrium","the right atrium"],
+ why:"The left ventricle pumps blood to the WHOLE body, so it needs the most muscle. The right ventricle only pumps to the nearby lungs.",
+ note:"Heart muscle = cardiac muscle (KAR-dee-ak). cardi- = heart."},
+{c:"heart", cmd:"COMPARE", q:"Compare arteries and veins.", tags:["COMPARE","DEFINE","EXPLAIN","DESCRIBE"],
+ o:["Both are blood vessels, but arteries carry blood away from the heart, while veins carry blood back to it.","A vein is a blood vessel that carries blood back to the heart.","Arteries have thick walls because the blood in them is pushed hard by the heart.","Arteries have thick, stretchy, muscular walls."],
+ why:"COMPARE = talk about BOTH: one way they are the same AND one way they are different. The other answers only talk about one of them.",
+ note:"✍️ Compare → “Both … but …” or “… while …”. Talking about only one thing is not a comparison."},
+{c:"heart", cmd:"OUTLINE", q:"Outline the path of blood through the heart.", tags:["OUTLINE","DESCRIBE","EXPLAIN","COMPARE"],
+ o:["Body → right atrium → right ventricle → lungs → left atrium → left ventricle → body.","The heart has four chambers: two atria on top and two ventricles below.","The left ventricle has the thickest wall because it pumps blood to the whole body.","Both sides of the heart pump blood, but the right side sends it to the lungs while the left side sends it to the body."],
+ why:"OUTLINE = the steps in order. Only the arrow answer follows the blood from start to end.",
+ note:"✍️ The Practice Exam says “EXPLAIN the path of blood…” — give this order, plus WHY it goes to the lungs (to pick up oxygen)."},
+
+/* ---------- BREATHING (6 + 2 command) ---------- */
+{c:"breathe", q:"What is the correct path of air into the lungs?", o:["nose/mouth → trachea → bronchi → bronchioles → alveoli","nose/mouth → bronchi → trachea → alveoli → bronchioles","nose/mouth → esophagus → trachea → alveoli","nose/mouth → alveoli → bronchioles → bronchi → trachea"],
+ why:"Big tube to tiny sacs: the trachea splits into 2 bronchi, then into small bronchioles, ending in alveoli.",
+ note:"trachea = TRAY-kee-uh · bronchi = BRONG-kye · alveoli = al-VEE-oh-lye. The esophagus carries FOOD, not air."},
+{c:"breathe", q:"Where does GAS EXCHANGE happen in the lungs?", o:["in the alveoli","in the trachea","in the bronchi","in the diaphragm"],
+ why:"Alveoli are tiny air sacs with very thin walls, covered in capillaries. Oxygen goes into the blood; CO₂ comes out.",
+ note:"Your lungs have about 300–500 million alveoli!"},
+{c:"breathe", q:"When you BREATHE IN, the diaphragm…", o:["contracts and moves DOWN","relaxes and moves UP","contracts and moves UP","does not move"],
+ why:"The diaphragm pulls down, the chest gets bigger, air pressure inside drops, and air rushes in.",
+ note:"diaphragm = DY-uh-fram (the g is silent). Breathing in = inhaling = inspiration (in-spih-RAY-shun)."},
+{c:"breathe", q:"When you BREATHE OUT, the diaphragm…", o:["relaxes and moves UP","contracts and moves DOWN","contracts and moves UP","relaxes and moves DOWN"],
+ why:"The diaphragm relaxes back up into its dome shape. The chest gets smaller and air is pushed out.",
+ note:"Breathing out = exhaling = expiration (ex-spih-RAY-shun). Preview: the rib (intercostal) muscles also help."},
+{c:"breathe", q:"Oxygen moves from the alveoli into the blood by diffusion. This means it moves…", o:["from where there is MORE oxygen to where there is LESS","from where there is LESS oxygen to where there is MORE","only when the heart pushes it","only when you hold your breath"],
+ why:"Diffusion: particles spread from high concentration to low concentration. The alveoli have more oxygen than the blood arriving there.",
+ note:"diffusion = dih-FYOO-zhun · concentration = kon-sen-TRAY-shun. Like the smell of fresh naan spreading through the whole house 🫓."},
+{c:"breathe", q:"Which part is coloured yellow ⭐?", qimg:"lungs:diaphragm", o:["the diaphragm","the trachea","the bronchi","the lungs"],
+ why:"The diaphragm is the dome-shaped muscle UNDER the lungs. It does most of the work of breathing.",
+ note:"The tube at the top is the trachea (windpipe). It splits into the two bronchi."},
+{c:"breathe", cmd:"DESCRIBE", q:"Describe the alveoli.", tags:["DESCRIBE","EXPLAIN","OUTLINE","COMPARE"],
+ o:["Alveoli are tiny, round air sacs with very thin walls, covered in capillaries.","Oxygen moves into the blood because there is more oxygen in the alveoli than in the blood.","Air goes nose → trachea → bronchi → bronchioles → alveoli.","Both alveoli and villi have a huge surface area, but alveoli absorb gases while villi absorb nutrients."],
+ why:"DESCRIBE = what something is like: its size, shape and features. No reason needed.",
+ note:"✍️ Describe → use “looking words”: tiny, round, thin, covered in…"},
+{c:"breathe", cmd:"EXPLAIN", q:"Explain how the diaphragm helps you breathe in.", tags:["EXPLAIN","DESCRIBE","IDENTIFY","DEFINE"],
+ o:["The diaphragm contracts and moves down, so the chest gets bigger and air is pulled into the lungs.","The diaphragm is a thin, dome-shaped sheet of muscle under the lungs.","The diaphragm.","Inhaling means breathing in."],
+ why:"EXPLAIN = HOW or WHY, with a cause and effect. “Contracts … SO the chest gets bigger … air is pulled in.”",
+ note:"✍️ Explain → look for “so”, “because”, “this causes”. Like a blacksmith's bellows: make the space bigger and air rushes in."},
+
+/* ---------- MUSCLES & BONES (5 + 1 command) ---------- */
+{c:"move", q:"A TENDON connects…", o:["muscle to bone","bone to bone","muscle to muscle","nerve to muscle"],
+ why:"Tendon = muscle to bone. Ligament = bone to bone. Many students mix these up!",
+ note:"tendon = TEN-dun · ligament = LIG-uh-ment. Trick: Ligament Links bones."},
+{c:"move", q:"Why do skeletal muscles work in PAIRS (like the biceps and triceps)?", o:["muscles can only PULL, not push, so one muscle bends the joint and the other straightens it","one muscle is always resting","two muscles are twice as strong as one","one muscle makes the bone, the other moves it"],
+ why:"A muscle can only contract (get shorter) and pull. To move back the other way, you need a second muscle.",
+ note:"biceps = BY-seps (front of arm) · triceps = TRY-seps (back of arm)."},
+{c:"move", q:"Where is SMOOTH muscle found?", o:["in the walls of organs like the stomach and intestines","attached to the bones","only in the heart","only in the arms and legs"],
+ why:"Smooth muscle works by itself (you don't control it) — for example, peristalsis. Skeletal muscle is on bones; cardiac muscle is only in the heart.",
+ note:"3 muscle types: skeletal (you control it), smooth and cardiac (they work by themselves)."},
+{c:"move", q:"Which is NOT a job of the skeletal system?", o:["digesting food","supporting the body","protecting organs like the brain","making blood cells"],
+ why:"Bones support, protect (the skull protects the brain), help you move, and make blood cells inside the bone marrow.",
+ note:"marrow = MAIR-oh: the soft tissue inside bones."},
+{c:"move", q:"Which exercise is ANAEROBIC (short bursts at full effort)?", o:["sprinting 100 m as fast as you can","walking for an hour","jogging slowly for 30 minutes","a long, easy bike ride"],
+ why:"Anaerobic = short, very hard effort; it builds muscle. Aerobic = longer, steady exercise; it trains the heart and lungs.",
+ note:"an- = without, aero- = air → anaerobic (an-uh-ROH-bik). Your muscles burn because lactic acid builds up. This is on the Unit 1 test!"},
+{c:"move", cmd:"LIST", q:"List the three types of muscle tissue.", tags:["LIST","DESCRIBE","EXPLAIN","DEFINE"],
+ o:["Skeletal, smooth and cardiac.","Skeletal muscle is attached to bones and looks striped.","Cardiac muscle works by itself, so your heart keeps beating while you sleep.","Muscle tissue is tissue that contracts to make movement."],
+ why:"LIST = just the names, no details. Short is correct here!",
+ note:"✍️ List → names only, separated by commas. Don't waste time adding details."},
+
+/* ---------- NERVES (3 + 1 command) ---------- */
+{c:"nerve", q:"The CENTRAL nervous system is made of…", o:["the brain and the spinal cord","the brain only","all the nerves in the arms and legs","the heart and the brain"],
+ why:"Central = in the middle: brain + spinal cord. The nerves going out to the rest of the body are the peripheral nervous system.",
+ note:"peripheral = puh-RIF-er-ul (on the edges) · spinal cord = SPY-nul KORD"},
+{c:"nerve", q:"A NEURON is…", o:["a nerve cell that carries electrical signals","a type of muscle","a part of the brain only","a blood vessel in the brain"],
+ why:"Neurons are specialized cells with long branches to carry messages quickly around the body ⚡.",
+ note:"neuron = NOOR-on. neur- = nerve. Some neurons are about 1 m long!"},
+{c:"nerve", q:"You touch a hot pan 🍳 and pull your hand away. The heat is the…", o:["stimulus","response","neuron","reflex arc"],
+ why:"A stimulus is a change that the body detects. Pulling your hand away is the response.",
+ note:"stimulus = STIM-yoo-lus (plural: stimuli, STIM-yoo-lye)."},
+{c:"nerve", cmd:"DESCRIBE", q:"Describe what happens in a reflex.", tags:["DESCRIBE","EXPLAIN","DEFINE","IDENTIFY"],
+ o:["You touch something hot and your hand pulls away very fast, before you even think about it.","A reflex is fast because the message only goes to the spinal cord and back, not up to the brain.","A reflex is a fast, automatic reaction to a stimulus.","The spinal cord."],
+ why:"DESCRIBE = tell what happens. The “because” answer EXPLAINS why it is fast — that is a different command word.",
+ note:"✍️ Describe = WHAT happens · Explain = WHY or HOW it happens. reflex = REE-flex."},
+
+/* ---------- PLANT SYSTEMS (8 + 2 command) ---------- */
+{c:"plant", q:"Plants have two organ systems. They are the…", o:["root system and shoot system","root system and leaf system","xylem system and phloem system","flower system and seed system"],
+ why:"Root system = everything under the ground. Shoot system = everything above (stems, leaves, flowers).",
+ note:"shoot = SHOOT. Xylem and phloem are TISSUES, not systems."},
+{c:"plant", q:"Root hairs help a plant because they…", o:["give a bigger surface area to absorb water and minerals","make food by photosynthesis","let gases in and out","hold the leaves up"],
+ why:"Thousands of tiny hairs = much more surface touching the soil, so more water gets in. (Same idea as villi!)",
+ note:"minerals = MIN-er-ulz: nutrients from the soil, like the ones in fertilizer 🌾."},
+{c:"plant", q:"Which tissue carries SUGAR made in the leaves down to the roots?", o:["phloem","xylem","epidermis","meristematic tissue"],
+ why:"Phloem carries food (sugar). Xylem carries water UP from the roots.",
+ note:"phloem = FLOH-em · xylem = ZY-lem. Trick: phloem = food (both have an “f” sound)."},
+{c:"plant", q:"Meristematic tissue is found at the tips of roots and shoots. What does it do?", o:["its cells keep dividing to make new cells, so the plant grows","it carries water up the stem","it makes food by photosynthesis","it protects the leaf from drying out"],
+ why:"Meristem cells are like stem cells in animals: they divide and become new, specialized cells.",
+ note:"meristematic = mair-ih-stuh-MAT-ik (from Greek meristos = divided)."},
+{c:"plant", q:"Which leaf tissue is coloured yellow ⭐? (Most photosynthesis happens here.)", qimg:"leaf:meso", o:["mesophyll","epidermis","the vein (xylem and phloem)","guard cells"],
+ why:"The mesophyll is the middle layer of the leaf, full of chloroplasts. A chloroplast is an organelle; the TISSUE is the mesophyll.",
+ note:"mesophyll = MEZ-oh-fil (meso- = middle, -phyll = leaf). Top layer = palisade mesophyll; lower = spongy mesophyll."},
+{c:"plant", q:"Which part is coloured yellow ⭐? (It opens and closes a tiny hole.)", qimg:"leaf:stoma", o:["guard cells around a stomate","the vein","mesophyll","upper epidermis"],
+ why:"Two guard cells open and close the stomate. It lets CO₂ in and lets oxygen and water vapour out.",
+ note:"stomate = STOH-mayt (also called stoma; plural stomata). Most are on the BOTTOM of the leaf."},
+{c:"plant", q:"The three types of plant tissue are…", o:["dermal, ground and vascular","epithelial, connective and muscle","root, stem and leaf","xylem, phloem and mesophyll"],
+ why:"Dermal = the plant's skin. Ground = the inside (stores food, does photosynthesis). Vascular = the transport tubes (xylem + phloem).",
+ note:"vascular = VAS-kyoo-ler (tubes). Root, stem and leaf are ORGANS, not tissues."},
+{c:"plant", q:"Transpiration is…", o:["the loss of water vapour from the leaves","the movement of sugar in the phloem","the making of food in the leaves","the growth of new roots"],
+ why:"Water evaporates out of the stomata. This pulls more water up the xylem from the roots.",
+ note:"transpiration = tran-spih-RAY-shun. On a hot, windy day, plants lose more water."},
+{c:"plant", cmd:"IDENTIFY", q:"Identify the plant tissue that carries water up from the roots.", tags:["IDENTIFY","DESCRIBE","EXPLAIN","DEFINE"],
+ o:["Xylem.","Long, hollow tubes made of cells joined end to end.","Water moves up because it evaporates from the leaves and pulls more water up behind it.","Transport means moving materials from one place to another."],
+ why:"IDENTIFY = just name it. One word is a full answer here!",
+ note:"✍️ Identify → the name, short. Xylem is like a karez channel carrying water to where it is needed."},
+{c:"plant", cmd:"COMPARE", q:"Compare xylem and phloem.", tags:["COMPARE","DEFINE","EXPLAIN","DESCRIBE"],
+ o:["Both are vascular tissues that carry materials, but xylem carries water up from the roots while phloem carries sugar from the leaves.","Xylem is the tissue that carries water from the roots to the leaves.","Phloem is important because roots cannot make their own food, so sugar must be brought to them.","Phloem is made of living tube cells joined end to end."],
+ why:"COMPARE = same AND different, about BOTH things. The other answers only talk about one tissue.",
+ note:"✍️ Compare → “Both … but … while …”. This is Practice Exam Unit 1 Q4!"},
+
+/* ---------- SYSTEMS TEAMWORK (5) ---------- */
+{c:"team", q:"Which two systems work together to get NUTRIENTS from food to every cell?", o:["digestive and circulatory","digestive and nervous","respiratory and skeletal","muscular and urinary"],
+ why:"The digestive system breaks food down; the nutrients enter capillaries in the villi; the circulatory system carries them to every cell.",
+ note:"circulatory = SER-kyoo-luh-tor-ee (it goes in a circle)."},
+{c:"team", q:"Which two systems work together to get OXYGEN to every cell?", o:["respiratory and circulatory","respiratory and digestive","nervous and skeletal","digestive and muscular"],
+ why:"Lungs take oxygen into the blood in the alveoli; the heart and blood vessels carry it to the cells. CO₂ goes the other way.",
+ note:"Textbook Table 8.1 lists 12 human organ systems. None of them work alone."},
+{c:"team", q:"During exercise, your breathing AND your heart rate both go up. Why?", o:["muscles need more oxygen and glucose, and must get rid of more CO₂","the heart needs to slow down the lungs","exercise makes the stomach digest faster","bones need more blood to grow"],
+ why:"Working muscles use more energy. Faster breathing brings in more O₂; a faster heart delivers it more quickly.",
+ note:"This is respiratory + circulatory + muscular systems all working together 🏃‍♀️."},
+{c:"team", q:"You decide to pick up a cup of chai 🍵. Which two systems work together?", o:["nervous and muscular","digestive and muscular","respiratory and nervous","circulatory and skeletal only"],
+ why:"The brain sends a signal along neurons; the muscles contract to move your arm.",
+ note:"The skeleton helps too — muscles pull on bones to make the movement."},
+{c:"team", q:"How do a plant's ROOT system and SHOOT system help each other?", o:["roots send water and minerals up; leaves send sugar down","roots make sugar for the leaves","leaves send water down to the roots","they do not need each other"],
+ why:"Water goes UP in the xylem to the leaves for photosynthesis. Sugar goes DOWN in the phloem to feed the roots.",
+ note:"Curriculum B2.6 gives this exact example: the root system and the leaf system."},
+
+/* ---------- HEALTH & DISEASE (4 + 1 command) ---------- */
+{c:"health", q:"Which is a CARCINOGEN (something that can cause cancer)?", o:["tobacco smoke","vitamin C","clean water","exercise"],
+ why:"Tobacco smoke has more than 70 chemicals that can cause cancer. UV rays and asbestos are other carcinogens.",
+ note:"carcinogen = kar-SIN-oh-jen (carcino- = cancer, -gen = makes)."},
+{c:"health", q:"Heart disease often starts when…", o:["fatty deposits build up and make arteries narrow","the heart grows too many chambers","red blood cells carry too much oxygen","the lungs make too much CO₂"],
+ why:"Narrow arteries carry less blood. If a heart artery is blocked, part of the heart muscle gets no oxygen — a heart attack.",
+ note:"Lower the risk: don't smoke, be active, and eat less fried and salty food."},
+{c:"health", q:"During an asthma attack, it is hard to breathe because…", o:["the airways (bronchioles) become swollen and narrow","the heart stops pumping","the diaphragm disappears","the alveoli fill with food"],
+ why:"Swollen, narrow tubes let less air through. An inhaler opens the airways again.",
+ note:"asthma = AZ-muh (the th is silent). Dust and smoke can trigger it."},
+{c:"health", q:"Which is the BEST way to lower the risk of lung cancer?", o:["don't smoke and avoid other people's smoke","drink more water","exercise only on weekends","eat more sugar"],
+ why:"Smoking is the biggest cause of lung cancer. Second-hand smoke (breathing other people's smoke) is also dangerous.",
+ note:"Other causes: radon gas, asbestos, air pollution, and family history (genetics). Unit 1 test: “explain two causes”."},
+{c:"health", cmd:"EXPLAIN", q:"Explain why smoking damages the lungs.", tags:["EXPLAIN","DESCRIBE","LIST","DEFINE"],
+ o:["Tar and chemicals in smoke damage the alveoli, so less oxygen gets into the blood and the risk of lung cancer goes up.","A smoker's lungs look dark grey or black instead of pink.","Tar, nicotine and carbon monoxide.","A carcinogen is something that can cause cancer."],
+ why:"EXPLAIN = cause → effect. “Chemicals damage the alveoli, SO less oxygen gets in.” The grey-lungs answer only DESCRIBES.",
+ note:"✍️ Explain → “… so …” or “… because …”. nicotine = NIK-uh-teen."},
+
+/* ---------- DISSECTION LAB (3) ---------- */
+{c:"lab", q:"In a frog dissection, the LARGEST organ is dark brown with three lobes. It is the…", o:["liver","heart","stomach","lungs"],
+ why:"Like in humans, the liver is the biggest organ in the abdomen. It makes bile for digestion.",
+ note:"lobe = LOHB: a rounded section. Preview: a frog's heart has only 3 chambers (2 atria, 1 ventricle)."},
+{c:"lab", q:"A frog's lungs are quite small. Why can it still get enough oxygen?", o:["it also breathes through its thin, moist skin","it does not need oxygen","it gets oxygen from its food","its heart makes oxygen"],
+ why:"Amphibians take in oxygen through their skin as well as their lungs — that is why their skin must stay wet.",
+ note:"amphibian = am-FIB-ee-un (amphi- = both, bio = life: they live in water AND on land)."},
+{c:"lab", q:"What do you notice about the body of an EARTHWORM in a dissection?", o:["it is divided into many repeated segments","it has a backbone","it has lungs","it has four legs"],
+ why:"Earthworms are annelids: segmented worms. They have no lungs — they breathe through their moist skin too.",
+ note:"annelid = AN-uh-lid (from Latin “little rings”). segment = SEG-ment (one section)."}
+];
+
+/* ================= APP ================= */
+const $ = id => document.getElementById(id);
+const card = $("card"), filter = $("filter");
+let deck = [], i = 0, flipped = false, answered = false, busy = false;
+const KEY = "bioSystemsDeck";
+
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;}
+function esc(s){return String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));}
+
+/* flat "cells under the microscope" pattern for card fronts */
+const CELLS = (()=>{ let s=`<svg class="cells" viewBox="0 0 400 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">`;
+  [[40,50,34],[150,22,22],[330,60,40],[380,190,26],[20,200,24],[70,330,38],[200,390,28],[340,350,36],[260,140,14],[110,150,12],[300,270,16]]
+  .forEach(([x,y,r])=>{ s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".10"/><circle cx="${x+r*.2}" cy="${y-r*.15}" r="${r*.35}" fill="#fff" fill-opacity=".14"/>`; });
+  return s+`</svg>`; })();
+
+function buildFilter(){
+  const counts = {}; let nCmd = 0;
+  CARDS.forEach(c=>{counts[c.c]=(counts[c.c]||0)+1; if(c.cmd) nCmd++;});
+  let html = `<option value="all">🎲 All categories (${CARDS.length})</option>`;
+  html += `<option value="cmd">✍️ Command words only (${nCmd})</option>`;
+  for(const k in CATS) if(counts[k]) html += `<option value="${k}">${CATS[k].emoji} ${CATS[k].name} (${counts[k]})</option>`;
+  filter.innerHTML = html;
+  try{ const saved = localStorage.getItem(KEY+"Filter"); if(saved && [...filter.options].some(o=>o.value===saved)) filter.value = saved; }catch(e){}
+}
+
+function newDeck(){
+  const f = filter.value;
+  const pool = CARDS.filter(c=>f==="all"||(f==="cmd"?c.cmd:c.c===f));
+  deck = shuffle(pool).map(c=>({...c, order: shuffle(c.o.map((t,idx)=>({t,correct:idx===0,tag:c.tags?c.tags[idx]:null})))}));
+  i = 0; render(false);
+}
+
+function updateCounter(){
+  $("count").textContent = `Card ${i+1} of ${deck.length}`;
+  $("barFill").style.width = ((i+1)/deck.length*100)+"%";
+  $("prev").disabled = i===0;
+  $("next").textContent = i===deck.length-1 ? "🔀 Start again" : "Next →";
+}
+
+function render(showBack){
+  const c = deck[i], cat = CATS[c.c];
+  flipped = showBack; answered = false;
+  card.style.setProperty("--cat", cat.color);
+  document.documentElement.style.setProperty("--cat", cat.color);
+  if(!showBack){
+    card.innerHTML = `<button class="face front" id="front" type="button" aria-label="${esc(cat.name)} card${c.cmd?", command word":""}. Tap to flip.">
+        ${CELLS}
+        <div class="emoji" aria-hidden="true">${cat.emoji}</div>
+        <div class="cat">${esc(cat.name)}</div>
+        <div class="tap">👆 Tap to flip</div>
+        ${c.cmd ? `<div class="cmdbadge">✍️ Command word</div>` : ""}
+      </button>`;
+    $("front").addEventListener("click", flip);
+  } else {
+    const L = ["A","B","C","D","E","F"];
+    card.innerHTML = `<div class="face back">
+        <div class="back-head"><span class="emoji" aria-hidden="true">${cat.emoji}</span>${esc(cat.name)}</div>
+        <div class="back-body">
+          ${c.cmd ? `<div class="cmd">✍️ ${esc(c.cmd)}</div>` : ""}
+          <div class="q">${esc(c.q).replace(/\n/g,"<br>")}</div>
+          ${c.qimg ? `<div class="qimg">${diagram(c.qimg)}</div>` : ""}
+          <div class="opts">${c.order.map((o,k)=>`<button class="opt" type="button" data-k="${k}"><span class="L">${L[k]}</span><span>${esc(o.t)}</span></button>`).join("")}</div>
+          <div id="feedback"></div>
+        </div>
+      </div>`;
+    card.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>choose(+b.dataset.k)));
+  }
+  updateCounter();
+}
+
+function flip(){
+  if(busy || flipped) return;
+  busy = true;
+  card.classList.add("turn");
+  setTimeout(()=>{ render(true); card.classList.remove("turn"); setTimeout(()=>{busy=false; const f=card.querySelector(".opt"); if(f) f.focus({preventScroll:true});},230); },220);
+}
+
+function choose(k){
+  if(answered) return;
+  answered = true;
+  const c = deck[i], btns = card.querySelectorAll(".opt");
+  const right = c.order.findIndex(o=>o.correct);
+  btns.forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx===right) b.classList.add("right");
+    else if(idx===k) b.classList.add("wrong");
+    else b.classList.add("dim");
+    const tag = c.order[idx].tag;
+    if(tag) b.insertAdjacentHTML("beforeend", `<span class="tag">${idx===right?"✅ ":""}answers <b>${esc(tag)}</b></span>`);
+  });
+  const ok = k===right;
+  const L = ["A","B","C","D","E","F"];
+  $("feedback").innerHTML =
+    `<div class="why ${ok?"ok":"no"}"><b>${ok?"✅ Correct!":"❌ Not quite — the answer is "+L[right]+": "+esc(c.order[right].t)}</b>${esc(c.why)}</div>` +
+    (c.note ? `<div class="note">${esc(c.note)}</div>` : "");
+}
+
+function go(d){
+  if(busy) return;
+  if(d>0 && i===deck.length-1){ newDeck(); return; }
+  const n = i+d; if(n<0||n>=deck.length) return;
+  i = n; render(false); window.scrollTo({top:0});
+}
+
+$("next").addEventListener("click",()=>go(1));
+$("prev").addEventListener("click",()=>go(-1));
+$("shuffle").addEventListener("click",newDeck);
+filter.addEventListener("change",()=>{ try{localStorage.setItem(KEY+"Filter",filter.value);}catch(e){} newDeck(); });
+
+document.addEventListener("keydown",e=>{
+  if(e.target===filter) return;
+  if(e.key==="ArrowRight"){e.preventDefault();go(1);}
+  else if(e.key==="ArrowLeft"){e.preventDefault();go(-1);}
+  else if((e.key===" "||e.key==="Enter") && !flipped){e.preventDefault();flip();}
+  else if(flipped && !answered && /^[1-6]$/.test(e.key)){ const k=+e.key-1; if(k<deck[i].order.length) choose(k); }
+});
+
+const intro = $("intro");
+/* Intro starts open on big screens (screen-share) and folded on phones, unless the viewer chose otherwise */
+let introPref = null;
+try{ introPref = localStorage.getItem(KEY+"Intro"); }catch(e){}
+if(introPref==="closed" || (introPref===null && window.innerWidth < 600)) intro.open = false;
+intro.addEventListener("toggle",()=>{ try{localStorage.setItem(KEY+"Intro", intro.open?"open":"closed");}catch(e){} });
+
+buildFilter(); newDeck();
+</script>
+</body>
+</html>
